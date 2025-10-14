@@ -1,0 +1,80 @@
+<div class="dashboard">
+  <header class="header">
+    <div class="header-content">
+      <h1 class="logo">EcoRutas</h1>
+      <div class="user-menu">
+        <span class="user-name">{{ userName() }}</span>
+        <button class="btn-logout" (click)="logout()">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="welcome">
+      <h2 class="title">¡Hola, {{ userName() }}!</h2>
+      <p class="subtitle">Bienvenido a tu panel de control de recolección</p>
+    </div>
+
+    @if (loading()) {
+      <div class="loading">Cargando datos...</div>
+    } @else if (error()) {
+      <div class="error-box">{{ error() }}</div>
+    } @else {
+      <div class="cards">
+        <a routerLink="/mapa" class="card card-primary card-clickable">
+          <div class="card-icon">🗺️</div>
+          <div class="card-body">
+            <h3 class="card-title">Mapa en vivo</h3>
+            <p class="card-text">Ver rutas y vehículos en tiempo real</p>
+            <div class="card-action">Ir al mapa →</div>
+          </div>
+        </a>
+
+        <div class="card">
+          <div class="card-icon">🚛</div>
+          <div class="card-body">
+            <h3 class="card-title">Vehículos activos</h3>
+            <p class="card-number">{{ vehiculosCount() }}</p>
+            <p class="card-text">En operación</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🛣️</div>
+          <div class="card-body">
+            <h3 class="card-title">Rutas disponibles</h3>
+            <p class="card-number">{{ rutasCount() }}</p>
+            <p class="card-text">En Buenaventura</p>
+          </div>
+        </div>
+
+        <a routerLink="/perfil" class="card card-clickable">
+          <div class="card-icon">👤</div>
+          <div class="card-body">
+            <h3 class="card-title">Mi perfil</h3>
+            <p class="card-text">Configurar dirección y preferencias</p>
+            <div class="card-action">Ver perfil →</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="info-section">
+        <h3 class="section-title">Accesos rápidos</h3>
+        <div class="quick-links">
+          <a routerLink="/mapa" class="quick-link">
+            <span class="link-icon">📍</span>
+            <span class="link-text">Ver mapa</span>
+          </a>
+          <a routerLink="/perfil" class="quick-link">
+            <span class="link-icon">⚙️</span>
+            <span class="link-text">Configuración</span>
+          </a>
+          <a routerLink="/auth/login" class="quick-link">
+            <span class="link-icon">ℹ️</span>
+            <span class="link-text">Ayuda</span>
+          </a>
+        </div>
+      </div>
+    }
+  </main>
+</div>

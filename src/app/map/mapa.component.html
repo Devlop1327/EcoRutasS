@@ -1,0 +1,39 @@
+<div class="map-layout">
+  <aside class="side">
+    <h2 class="title">Rutas</h2>
+    @if (loading()) {
+      <div class="muted">Cargando rutas...</div>
+    } @else if (error()) {
+      <div class="error">{{ error() }}</div>
+    } @else {
+      <ul class="list">
+        @for (r of rutas(); track r.id) {
+          <li class="item">{{ r.nombre }}</li>
+        }
+        @if (rutas().length === 0) {
+          <li class="muted">Sin rutas</li>
+        }
+      </ul>
+    }
+
+    <h2 class="title mt">Vehículos</h2>
+    @if (loading()) {
+      <div class="muted">Cargando...</div>
+    } @else {
+      <ul class="list">
+        @for (v of vehiculos(); track v.id) {
+          <li class="item vehicle">
+            <span class="icon">🚛</span>
+            {{ v.placa || v.id }}
+          </li>
+        }
+        @if (vehiculos().length === 0) {
+          <li class="muted">Sin vehículos</li>
+        }
+      </ul>
+    }
+  </aside>
+  <section class="map-wrap">
+    <div id="map" class="map"></div>
+  </section>
+</div>

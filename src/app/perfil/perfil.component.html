@@ -1,0 +1,120 @@
+<div class="perfil">
+  <header class="header">
+    <div class="header-content">
+      <h1 class="logo">EcoRutas</h1>
+      <div class="user-menu">
+        <a routerLink="/dashboard" class="btn-back">← Volver</a>
+        <button class="btn-logout" (click)="logout()">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="page-header">
+      <h2 class="title">Mi Perfil</h2>
+      <p class="subtitle">Configura tu información personal y preferencias</p>
+    </div>
+
+    @if (message()) {
+      <div class="message" [class.success]="message()!.type === 'success'" [class.error]="message()!.type === 'error'">
+        {{ message()!.text }}
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-container">
+      <div class="section">
+        <h3 class="section-title">Información personal</h3>
+        <div class="form-grid">
+          <div class="form-field">
+            <label class="label">Correo electrónico</label>
+            <input type="text" class="input" [value]="userEmail()" disabled />
+            <small class="hint">No se puede modificar</small>
+          </div>
+
+          <div class="form-field">
+            <label class="label">Nombre de usuario *</label>
+            <input type="text" class="input" formControlName="username" />
+            @if (form.get('username')?.invalid && form.get('username')?.touched) {
+              <small class="error-text">Mínimo 3 caracteres</small>
+            }
+          </div>
+
+          <div class="form-field">
+            <label class="label">Nombre completo</label>
+            <input type="text" class="input" formControlName="fullName" />
+          </div>
+
+          <div class="form-field">
+            <label class="label">Teléfono</label>
+            <input type="tel" class="input" formControlName="phone" placeholder="+57 300 123 4567" />
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title">Dirección de recolección</h3>
+        <div class="form-grid">
+          <div class="form-field full-width">
+            <label class="label">Dirección</label>
+            <input type="text" class="input" formControlName="address" placeholder="Calle 10 # 20-30" />
+          </div>
+
+          <div class="form-field">
+            <label class="label">Barrio</label>
+            <input type="text" class="input" formControlName="neighborhood" placeholder="Centro" />
+          </div>
+
+          <div class="form-field">
+            <label class="label">Latitud</label>
+            <input type="number" class="input" formControlName="lat" step="0.000001" placeholder="3.882" />
+          </div>
+
+          <div class="form-field">
+            <label class="label">Longitud</label>
+            <input type="number" class="input" formControlName="lng" step="0.000001" placeholder="-77.031" />
+          </div>
+
+          <div class="form-field full-width">
+            <button type="button" class="btn-secondary" (click)="getCurrentLocation()" [disabled]="loading()">
+              @if (loading()) {
+                Obteniendo ubicación...
+              } @else {
+                📍 Usar mi ubicación actual
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title">Notificaciones</h3>
+        <div class="form-grid">
+          <div class="form-field checkbox-field">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="notifyEmail" />
+              <span>Recibir notificaciones por correo</span>
+            </label>
+          </div>
+
+          <div class="form-field checkbox-field">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="notifyPush" />
+              <span>Recibir notificaciones push</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" routerLink="/dashboard" class="btn-cancel">Cancelar</button>
+        <button type="submit" class="btn-submit" [disabled]="form.invalid || saving()">
+          @if (saving()) {
+            Guardando...
+          } @else {
+            Guardar cambios
+          }
+        </button>
+      </div>
+    </form>
+  </main>
+</div>

@@ -1,0 +1,80 @@
+<div class="login-container">
+  <mat-card class="login-card">
+    <mat-card-header>
+      <mat-card-title>Iniciar Sesión</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input 
+            matInput 
+            type="email" 
+            [ngModel]="email()" 
+            (ngModelChange)="email.set($event)"
+            name="email" 
+            required
+            email
+            #emailField="ngModel"
+          >
+          @if (emailField.errors?.['required'] && emailField.touched) {
+            <mat-error>El email es requerido</mat-error>
+          }
+          @if (emailField.errors?.['email'] && emailField.touched) {
+            <mat-error>Ingresa un email válido</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Contraseña</mat-label>
+          <input 
+            matInput 
+            [type]="showPassword() ? 'text' : 'password'" 
+            [ngModel]="password()" 
+            (ngModelChange)="password.set($event)"
+            name="password" 
+            required
+            minlength="6"
+            #passwordField="ngModel"
+          >
+          <button 
+            mat-icon-button 
+            matSuffix 
+            type="button"
+            (click)="togglePassword()"
+            [attr.aria-label]="'Mostrar contraseña'"
+            [attr.aria-pressed]="showPassword()"
+            class="password-toggle"
+          >
+            <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (passwordField.errors?.['required'] && passwordField.touched) {
+            <mat-error>La contraseña es requerida</mat-error>
+          }
+          @if (passwordField.errors?.['minlength'] && passwordField.touched) {
+            <mat-error>Mínimo 6 caracteres</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="actions">
+          <button 
+            mat-raised-button 
+            color="primary" 
+            type="submit"
+            [disabled]="loading() || loginForm.invalid"
+          >
+            @if (loading()) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              Iniciar Sesión
+            }
+          </button>
+          
+          <a mat-button routerLink="/auth/register" class="register-link">
+            ¿No tienes cuenta? Regístrate
+          </a>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

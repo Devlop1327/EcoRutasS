@@ -1,0 +1,11 @@
+<div class="min-h-screen flex items-center justify-center p-6">
+  <div class="w-full max-w-sm text-center">
+    @if (status() === 'checking') {
+      <div>Cerrando sesión de OAuth, por favor espera...</div>
+    } @else if (status() === 'ok') {
+      <div>Autenticado correctamente. Redirigiendo...</div>
+    } @else {
+      <div>Hubo un problema al autenticar. Redirigiendo al login...</div>
+    }
+  </div>
+</div>
