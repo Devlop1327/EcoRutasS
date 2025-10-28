@@ -11,6 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSelectModule } from '@angular/material/select';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -28,7 +29,8 @@ import { AuthService } from '../../core/services/auth.service';
     MatProgressSpinnerModule,
     MatCheckboxModule,
     MatDividerModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatSelectModule
   ],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
@@ -48,6 +50,7 @@ export class RegisterComponent {
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     confirmPassword: ['', [Validators.required]],
+    role: ['cliente', [Validators.required]],
     terms: [false, [Validators.requiredTrue]],
   });
 
@@ -81,7 +84,7 @@ export class RegisterComponent {
     this.loading.set(true);
     this.error.set(null);
 
-    const { username, email, password } = this.form.getRawValue();
+    const { username, email, password, role } = this.form.getRawValue();
     try {
       const res = await this.auth.signUp({
         username: username as string,
@@ -90,6 +93,9 @@ export class RegisterComponent {
       });
 
       if (res.error) throw res.error;
+      if (res.user?.id && role) {
+        await this.auth.upsertProfileRole(res.user.id, role as string);
+      }
       await this.router.navigate(['/auth/login']);
     } catch (e: any) {
       this.error.set(e?.message || 'No se pudo registrar');

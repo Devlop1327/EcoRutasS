@@ -1,0 +1,59 @@
+<div class="rutas-page">
+  <h2>Rutas</h2>
+
+  <section class="actions">
+    <button mat-raised-button color="primary" routerLink="/admin/rutas/editor">
+      <mat-icon>map</mat-icon>
+      Crear desde mapa
+    </button>
+  </section>
+
+  <section class="union-form">
+    <h3>Crear por unión de calles</h3>
+    <form [formGroup]="unionForm" (ngSubmit)="crearPorUnion()">
+      <div class="grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Nombre de la ruta</mat-label>
+          <input matInput formControlName="nombre_ruta">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Calles IDs (separadas por coma o salto de línea)</mat-label>
+          <textarea matInput rows="4" formControlName="calles_ids"></textarea>
+        </mat-form-field>
+      </div>
+      <div class="buttons">
+        <button mat-raised-button color="primary" type="submit" [disabled]="loading() || unionForm.invalid">
+          @if (loading()) { Creando... } @else { Crear }
+        </button>
+      </div>
+    </form>
+    @if (error()) { <div class="msg error">{{ error() }}</div> }
+    @if (success()) { <div class="msg ok">{{ success() }}</div> }
+  </section>
+
+  <section class="listado">
+    <h3>Listado</h3>
+    @if (listLoading()) {
+      <div class="loading">Cargando...</div>
+    } @else {
+      <div class="list">
+        @for (r of rutas(); track r.id) {
+          <mat-card class="item">
+            <div class="row">
+              <div class="col">
+                <div class="title">{{ r.nombre }}</div>
+                <div class="subtitle">{{ r.zona || '—' }}</div>
+              </div>
+              <div class="col small">
+                <a mat-button [routerLink]="['/admin/rutas/editor']" [queryParams]="{ id: r.id }">Ver en editor</a>
+              </div>
+            </div>
+          </mat-card>
+        }
+        @if (rutas().length === 0) {
+          <div class="empty">Sin rutas</div>
+        }
+      </div>
+    }
+  </section>
+</div>

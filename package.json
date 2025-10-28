@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",
     "watch": "ng build --watch --configuration development"
   },
@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@angular/build": "^20.3.5",
-    "@angular/cli": "^20.3.5",
+    "@angular/cli": "^20.3.7",
     "@angular/compiler-cli": "^20.3.0",
     "typescript": "~5.9.2"
   }

@@ -3,6 +3,9 @@
     <div class="header-content">
       <h1 class="logo">EcoRutas</h1>
       <div class="user-menu">
+        @if (role()) {
+          <span class="role-badge" [attr.data-role]="role()">{{ role() | titlecase }}</span>
+        }
         <span class="user-name">{{ userName() }}</span>
         <button class="btn-logout" (click)="logout()">Salir</button>
       </div>
@@ -69,6 +72,12 @@
             <span class="link-icon">⚙️</span>
             <span class="link-text">Configuración</span>
           </a>
+          @if (role() === 'admin') {
+            <a routerLink="/admin" class="quick-link">
+              <span class="link-icon">🛠️</span>
+              <span class="link-text">Admin</span>
+            </a>
+          }
           <a routerLink="/auth/login" class="quick-link">
             <span class="link-icon">ℹ️</span>
             <span class="link-text">Ayuda</span>

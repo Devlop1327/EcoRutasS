@@ -21,6 +21,7 @@ export class DashboardComponent implements OnInit {
   rutasCount = signal(0);
   vehiculosCount = signal(0);
   error = signal<string | null>(null);
+  role = this.auth.role;
 
   async ngOnInit() {
     const user = this.auth.getCurrentUser();

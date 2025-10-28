@@ -1,0 +1,63 @@
+<div class="vehiculos-page">
+  <h2>Vehículos</h2>
+
+  <section class="form-section">
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Placa</mat-label>
+          <input matInput formControlName="placa">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Marca</mat-label>
+          <input matInput formControlName="marca">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Modelo</mat-label>
+          <input matInput formControlName="modelo">
+        </mat-form-field>
+        <mat-slide-toggle formControlName="activo">Activo</mat-slide-toggle>
+      </div>
+      <div class="actions">
+        <button mat-raised-button color="primary" type="submit" [disabled]="loading() || form.invalid">
+          @if (loading()) { Guardando... } @else { Guardar }
+        </button>
+        <button mat-button type="button" (click)="newVehiculo()">Nuevo</button>
+      </div>
+    </form>
+    @if (error()) { <div class="msg error">{{ error() }}</div> }
+    @if (success()) { <div class="msg ok">{{ success() }}</div> }
+  </section>
+
+  <section class="list-section">
+    <h3>Listado</h3>
+    @if (listLoading()) {
+      <div class="loading">Cargando...</div>
+    } @else {
+      <div class="list">
+        @for (v of vehiculos(); track v.id) {
+          <mat-card class="item">
+            <div class="row">
+              <div class="col">
+                <div class="title">{{ v.placa }}</div>
+                <div class="subtitle">{{ v.marca }} • {{ v.modelo }}</div>
+              </div>
+              <div class="col small">{{ v.activo === false ? 'Inactivo' : 'Activo' }}</div>
+              <div class="col actions">
+                <button mat-icon-button color="primary" (click)="editVehiculo(v)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="deleteVehiculo(v.id)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          </mat-card>
+        }
+        @if (vehiculos().length === 0) {
+          <div class="empty">Sin vehículos</div>
+        }
+      </div>
+    }
+  </section>
+</div>

@@ -1,0 +1,24 @@
+<div class="editor-ruta-page">
+  <h2>Editor de Ruta</h2>
+
+  <section class="top-actions">
+    <form [formGroup]="form" (ngSubmit)="save()" class="name-form">
+      <mat-form-field appearance="outline">
+        <mat-label>Nombre de la ruta</mat-label>
+        <input matInput formControlName="nombre_ruta">
+      </mat-form-field>
+      <button mat-raised-button color="primary" type="submit" [disabled]="loading() || form.invalid || puntos().length < 2">
+        Guardar
+      </button>
+      <button mat-button type="button" (click)="undo()">Borrar último punto</button>
+      <button mat-button type="button" (click)="clearAll()">Limpiar</button>
+    </form>
+    @if (error()) { <div class="msg error">{{ error() }}</div> }
+    @if (success()) { <div class="msg ok">{{ success() }}</div> }
+  </section>
+
+  <section class="map-wrap">
+    <div id="editor-map"></div>
+    <div class="hint">Click en el mapa para agregar puntos. Mínimo 2 puntos.</div>
+  </section>
+</div>

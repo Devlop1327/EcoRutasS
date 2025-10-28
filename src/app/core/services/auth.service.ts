@@ -29,6 +29,7 @@ export class AuthService {
   currentUser = signal<User | null>(null);
   isLoading = signal(true);
   error = signal<string | null>(null);
+  role = signal<'cliente' | 'conductor' | 'admin' | null>(null);
 
   constructor() {
     const supaUrl = (environment as any).supabase?.url ?? (environment as any).supabaseUrl;
@@ -69,6 +70,11 @@ export class AuthService {
       }
       
       this.currentUser.set(session?.user ?? null);
+      if (session?.user?.id) {
+        await this.loadProfileRole(session.user.id);
+      } else {
+        this.role.set(null);
+      }
       return session?.user ?? null;
     } catch (error) {
       console.error('Error checking auth:', error);
@@ -94,6 +100,9 @@ export class AuthService {
       }
       
       this.currentUser.set(data.user);
+      if (data.user?.id) {
+        await this.loadProfileRole(data.user.id);
+      }
       this.router.navigate(['/dashboard']);
       return { user: data.user };
     } catch (error: any) {
@@ -163,6 +172,39 @@ export class AuthService {
       return { user: null, error };
     } finally {
       this.isLoading.set(false);
+    }
+  }
+
+  async upsertProfileRole(userId: string, role: string): Promise<void> {
+    try {
+      const { error } = await this.supabase
+        .from('profiles')
+        .upsert({ id: userId, role }, { onConflict: 'id' });
+
+      if (error) {
+        const msg = String(error.message || '').toLowerCase();
+        if (msg.includes('uniq_single_admin') || msg.includes('duplicate key') || msg.includes('unique')) {
+          throw new Error('Ya existe un administrador. Solo se permite un admin.');
+        }
+        throw error;
+      }
+    } catch (e: any) {
+      throw e;
+    }
+  }
+
+  async loadProfileRole(userId: string): Promise<void> {
+    try {
+      const { data, error } = await this.supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single();
+      if (error) throw error;
+      const r = (data as any)?.role as 'cliente' | 'conductor' | 'admin' | null;
+      this.role.set(r ?? null);
+    } catch {
+      this.role.set(null);
     }
   }
 

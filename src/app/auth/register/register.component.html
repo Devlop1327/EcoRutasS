@@ -68,6 +68,15 @@
               }
             </mat-form-field>
 
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Rol</mat-label>
+              <mat-select formControlName="role">
+                <mat-option value="cliente">Cliente</mat-option>
+                <mat-option value="conductor">Conductor</mat-option>
+                <mat-option value="admin">Administrador</mat-option>
+              </mat-select>
+            </mat-form-field>
+
             <div class="row-between">
               <mat-checkbox formControlName="terms">Acepto los términos y condiciones</mat-checkbox>
             </div>
