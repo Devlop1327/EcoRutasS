@@ -44,6 +44,10 @@
               }
             </mat-form-field>
 
+            <div class="actions actions--top">
+              <a mat-button color="primary" routerLink="/auth/forgot">¿Olvidaste tu contraseña?</a>
+            </div>
+
             <div class="actions">
               <button 
                 mat-raised-button 
@@ -61,6 +65,13 @@
               <a mat-button routerLink="/auth/register" class="register-link">
                 ¿No tienes cuenta? Regístrate
               </a>
+            </div>
+
+            <div class="actions">
+              <button mat-stroked-button color="primary" type="button" (click)="signInWithGoogle()" [disabled]="loading()">
+                <mat-icon>login</mat-icon>
+                <span>Continuar con Google</span>
+              </button>
             </div>
           </form>
         </mat-card-content>

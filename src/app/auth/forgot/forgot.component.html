@@ -1,0 +1,54 @@
+<div class="login-container">
+  <div class="auth-shell">
+    <div class="form-panel">
+      <mat-card class="login-card">
+        <mat-card-header>
+          <div mat-card-avatar class="eco-avatar">
+            <mat-icon>mail</mat-icon>
+          </div>
+          <mat-card-title>Restablecer contraseña</mat-card-title>
+          <mat-card-subtitle>Te enviaremos un enlace a tu correo</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          @if (error()) {
+            <div class="error">{{ error() }}</div>
+          }
+
+          @if (!sent()) {
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Correo</mat-label>
+                <input matInput type="email" formControlName="email" />
+                @if (form.controls.email.errors?.['required'] && form.controls.email.touched) {
+                  <mat-error>El correo es requerido</mat-error>
+                }
+                @if (form.controls.email.errors?.['email'] && form.controls.email.touched) {
+                  <mat-error>Ingresa un correo válido</mat-error>
+                }
+              </mat-form-field>
+
+              <div class="actions">
+                <button mat-raised-button color="primary" type="submit" [disabled]="loading() || form.invalid">
+                  @if (loading()) { <mat-spinner diameter="20"></mat-spinner> } @else { Enviar enlace }
+                </button>
+                <a mat-button routerLink="/auth/login">Volver a iniciar sesión</a>
+              </div>
+            </form>
+          } @else {
+            <div class="success">Revisa tu correo para continuar con el restablecimiento.</div>
+            <div class="actions">
+              <a mat-flat-button color="primary" routerLink="/auth/login">Ir al login</a>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="visual-panel">
+      <div class="visual-content">
+        <mat-icon class="visual-icon">eco</mat-icon>
+        <h2>EcoRutas</h2>
+        <p>Seguimos cuidando el ambiente contigo.</p>
+      </div>
+    </div>
+  </div>
+</div>

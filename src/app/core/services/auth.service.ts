@@ -1,7 +1,8 @@
-import { Injectable, inject, signal } from '@angular/core';
-import { createClient, type User, type SupabaseClient, type AuthError } from '@supabase/supabase-js';
-import { environment } from '../../../environments/environment';
+import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { createClient, SupabaseClient, User, type AuthError } from '@supabase/supabase-js';
+import { environment } from '../../../environments/environment';
+import { signal } from '@angular/core';
 
 type SignInCredentials = {
   email: string;
@@ -30,13 +31,16 @@ export class AuthService {
   error = signal<string | null>(null);
 
   constructor() {
-    if (!environment.supabase?.url || !environment.supabase?.key) {
-      throw new Error('Missing Supabase configuration in environment');
+    const supaUrl = (environment as any).supabase?.url ?? (environment as any).supabaseUrl;
+    const supaKey = (environment as any).supabase?.key ?? (environment as any).supabaseKey;
+
+    if (!supaUrl || !supaKey) {
+      throw new Error('Missing Supabase configuration. Define environment.supabase.url/key or supabaseUrl/supabaseKey');
     }
 
     this.supabase = createClient(
-      environment.supabase.url,
-      environment.supabase.key,
+      supaUrl,
+      supaKey,
       {
         auth: {
           persistSession: true,

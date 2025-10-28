@@ -14,6 +14,10 @@ export const AUTH_ROUTES: Routes = [
     loadComponent: () => import('./register/register.component').then(m => m.RegisterComponent)
   },
   {
+    path: 'forgot',
+    loadComponent: () => import('./forgot/forgot.component').then(m => m.ForgotComponent)
+  },
+  {
     path: '**',
     redirectTo: 'login',
     pathMatch: 'full'

@@ -23,6 +23,7 @@ import { AuthService } from '../../core/services/auth.service';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    MatSnackBarModule,
     RouterLink
   ],
   templateUrl: './login.component.html',
