@@ -1,6 +1,6 @@
 import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -16,7 +16,6 @@ import { AuthService } from '../../core/services/auth.service';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,
@@ -33,25 +32,27 @@ export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
+  private fb = inject(FormBuilder);
 
-  email = signal('');
-  password = signal('');
   showPassword = signal(false);
   loading = signal(false);
+
+  form = this.fb.nonNullable.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]]
+  });
 
   togglePassword() {
     this.showPassword.update(show => !show);
   }
 
   async onSubmit() {
-    if (this.loading()) return;
+    if (this.loading() || this.form.invalid) return;
     
     this.loading.set(true);
     try {
-      await this.authService.signIn({
-        email: this.email(),
-        password: this.password()
-      });
+      const { email, password } = this.form.getRawValue();
+      await this.authService.signIn({ email, password });
       
       this.snackBar.open('¡Bienvenido!', 'Cerrar', {
         duration: 3000,

@@ -9,8 +9,56 @@
   align-items: center;
   min-height: 100vh;
   padding: 1.5rem;
-  background: linear-gradient(135deg, #1e88e5, #0d47a1);
+  background: linear-gradient(135deg, #43a047, #1b5e20);
   background-size: cover;
+}
+
+.auth-shell {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1000px;
+}
+
+.form-panel {
+  display: flex;
+  align-items: center;
+}
+
+.visual-panel {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: radial-gradient(1200px 600px at 80% -20%, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 60%),
+              linear-gradient(135deg, #2e7d32, #0f3d18);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.visual-content {
+  text-align: center;
+  color: #e8f5e9;
+  padding: 2rem;
+}
+
+.visual-content h2 {
+  margin: 0.5rem 0 0.25rem;
+  font-weight: 600;
+}
+
+.visual-content p {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.visual-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: #a5d6a7;
 }
 
 .login-card {
@@ -28,7 +76,7 @@
 }
 
 .login-card mat-card-header {
-  background: #1976d2;
+  background: #2e7d32;
   color: white;
   padding: 1.5rem;
   margin: 0;
@@ -43,6 +91,19 @@
 .login-card mat-card-content {
   padding: 2rem;
   background: white;
+}
+
+.eco-avatar {
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  backdrop-filter: blur(2px);
+
+  mat-icon {
+    color: #e8f5e9;
+  }
 }
 
 .full-width {
@@ -60,7 +121,7 @@ mat-form-field.mat-form-field-appearance-outline .mat-form-field-outline {
 }
 
 mat-form-field.mat-focused .mat-form-field-outline-thick {
-  color: #1976d2;
+  color: #2e7d32;
 }
 
 .actions {
@@ -80,12 +141,12 @@ button[mat-raised-button] {
   transition: all 0.3s ease;
 
   &:not(:disabled) {
-    background: #1976d2;
+    background: #2e7d32;
     color: white;
   }
 
   &:hover:not(:disabled) {
-    background: #1565c0;
+    background: #1b5e20;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
@@ -94,14 +155,14 @@ button[mat-raised-button] {
 .register-link {
   text-align: center;
   text-decoration: none;
-  color: #1976d2;
+  color: #2e7d32;
   font-weight: 500;
   margin-top: 1rem;
   display: inline-block;
   transition: color 0.2s ease;
 
   &:hover {
-    color: #0d47a1;
+    color: #1b5e20;
     text-decoration: underline;
   }
 }
@@ -120,11 +181,20 @@ mat-error {
   transition: color 0.2s ease;
 
   &:hover {
-    color: #1976d2;
+    color: #2e7d32;
   }
 }
 
 // Media queries para responsividad
+@media (max-width: 900px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+  }
+  .visual-panel {
+    display: none;
+  }
+}
+
 @media (max-width: 480px) {
   .login-card {
     margin: 1rem;

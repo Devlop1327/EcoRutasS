@@ -1,80 +1,77 @@
 <div class="login-container">
-  <mat-card class="login-card">
-    <mat-card-header>
-      <mat-card-title>Iniciar Sesión</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Email</mat-label>
-          <input 
-            matInput 
-            type="email" 
-            [ngModel]="email()" 
-            (ngModelChange)="email.set($event)"
-            name="email" 
-            required
-            email
-            #emailField="ngModel"
-          >
-          @if (emailField.errors?.['required'] && emailField.touched) {
-            <mat-error>El email es requerido</mat-error>
-          }
-          @if (emailField.errors?.['email'] && emailField.touched) {
-            <mat-error>Ingresa un email válido</mat-error>
-          }
-        </mat-form-field>
+  <div class="auth-shell">
+    <div class="form-panel">
+      <mat-card class="login-card">
+        <mat-card-header>
+          <div mat-card-avatar class="eco-avatar">
+            <mat-icon>recycling</mat-icon>
+          </div>
+          <mat-card-title>Iniciar Sesión</mat-card-title>
+          <mat-card-subtitle>Recicla y cuida tu ciudad</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="form" (ngSubmit)="onSubmit()">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" formControlName="email">
+              @if (form.controls.email.errors?.['required'] && form.controls.email.touched) {
+                <mat-error>El email es requerido</mat-error>
+              }
+              @if (form.controls.email.errors?.['email'] && form.controls.email.touched) {
+                <mat-error>Ingresa un email válido</mat-error>
+              }
+            </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Contraseña</mat-label>
-          <input 
-            matInput 
-            [type]="showPassword() ? 'text' : 'password'" 
-            [ngModel]="password()" 
-            (ngModelChange)="password.set($event)"
-            name="password" 
-            required
-            minlength="6"
-            #passwordField="ngModel"
-          >
-          <button 
-            mat-icon-button 
-            matSuffix 
-            type="button"
-            (click)="togglePassword()"
-            [attr.aria-label]="'Mostrar contraseña'"
-            [attr.aria-pressed]="showPassword()"
-            class="password-toggle"
-          >
-            <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
-          </button>
-          @if (passwordField.errors?.['required'] && passwordField.touched) {
-            <mat-error>La contraseña es requerida</mat-error>
-          }
-          @if (passwordField.errors?.['minlength'] && passwordField.touched) {
-            <mat-error>Mínimo 6 caracteres</mat-error>
-          }
-        </mat-form-field>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Contraseña</mat-label>
+              <input matInput [type]="showPassword() ? 'text' : 'password'" formControlName="password">
+              <button 
+                mat-icon-button 
+                matSuffix 
+                type="button"
+                (click)="togglePassword()"
+                [attr.aria-label]="'Mostrar contraseña'"
+                [attr.aria-pressed]="showPassword()"
+                class="password-toggle"
+              >
+                <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              @if (form.controls.password.errors?.['required'] && form.controls.password.touched) {
+                <mat-error>La contraseña es requerida</mat-error>
+              }
+              @if (form.controls.password.errors?.['minlength'] && form.controls.password.touched) {
+                <mat-error>Mínimo 6 caracteres</mat-error>
+              }
+            </mat-form-field>
 
-        <div class="actions">
-          <button 
-            mat-raised-button 
-            color="primary" 
-            type="submit"
-            [disabled]="loading() || loginForm.invalid"
-          >
-            @if (loading()) {
-              <mat-spinner diameter="20"></mat-spinner>
-            } @else {
-              Iniciar Sesión
-            }
-          </button>
-          
-          <a mat-button routerLink="/auth/register" class="register-link">
-            ¿No tienes cuenta? Regístrate
-          </a>
-        </div>
-      </form>
-    </mat-card-content>
-  </mat-card>
+            <div class="actions">
+              <button 
+                mat-raised-button 
+                color="primary" 
+                type="submit"
+                [disabled]="loading() || form.invalid"
+              >
+                @if (loading()) {
+                  <mat-spinner diameter="20"></mat-spinner>
+                } @else {
+                  Iniciar Sesión
+                }
+              </button>
+              
+              <a mat-button routerLink="/auth/register" class="register-link">
+                ¿No tienes cuenta? Regístrate
+              </a>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="visual-panel">
+      <div class="visual-content">
+        <mat-icon class="visual-icon">eco</mat-icon>
+        <h2>EcoRutas</h2>
+        <p>Rastrea el recorrido de recolección y saca tu basura a tiempo.</p>
+      </div>
+    </div>
+  </div>
 </div>
