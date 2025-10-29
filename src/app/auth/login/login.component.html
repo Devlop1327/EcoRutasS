@@ -4,7 +4,7 @@
       <mat-card class="login-card">
         <mat-card-header>
           <div mat-card-avatar class="eco-avatar">
-            <mat-icon>recycling</mat-icon>
+            <mat-icon class="material-symbols-rounded">recycling</mat-icon>
           </div>
           <mat-card-title>Iniciar Sesión</mat-card-title>
           <mat-card-subtitle>Recicla y cuida tu ciudad</mat-card-subtitle>
@@ -13,6 +13,7 @@
           <form [formGroup]="form" (ngSubmit)="onSubmit()">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Email</mat-label>
+              <mat-icon matPrefix class="material-symbols-rounded">alternate_email</mat-icon>
               <input matInput type="email" formControlName="email">
               @if (form.controls.email.errors?.['required'] && form.controls.email.touched) {
                 <mat-error>El email es requerido</mat-error>
@@ -24,6 +25,7 @@
 
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Contraseña</mat-label>
+              <mat-icon matPrefix class="material-symbols-rounded">lock</mat-icon>
               <input matInput [type]="showPassword() ? 'text' : 'password'" formControlName="password">
               <button 
                 mat-icon-button 
@@ -34,7 +36,7 @@
                 [attr.aria-pressed]="showPassword()"
                 class="password-toggle"
               >
-                <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                <mat-icon class="material-symbols-rounded">{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
               @if (form.controls.password.errors?.['required'] && form.controls.password.touched) {
                 <mat-error>La contraseña es requerida</mat-error>
@@ -44,7 +46,8 @@
               }
             </mat-form-field>
 
-            <div class="actions actions--top">
+            <div class="actions actions--inline">
+              <mat-checkbox color="primary" formControlName="remember">Recuérdame</mat-checkbox>
               <a mat-button color="primary" routerLink="/auth/forgot">¿Olvidaste tu contraseña?</a>
             </div>
 
@@ -71,7 +74,6 @@
 
             <div class="actions">
               <button mat-stroked-button color="primary" type="button" (click)="signInWithGoogle()" [disabled]="loading()">
-                <mat-icon>login</mat-icon>
                 <span>Continuar con Google</span>
               </button>
             </div>
@@ -81,7 +83,7 @@
     </div>
     <div class="visual-panel">
       <div class="visual-content">
-        <mat-icon class="visual-icon">eco</mat-icon>
+        <mat-icon class="visual-icon material-symbols-rounded">eco</mat-icon>
         <h2>EcoRutas</h2>
         <p>Rastrea el recorrido de recolección y saca tu basura a tiempo.</p>
       </div>

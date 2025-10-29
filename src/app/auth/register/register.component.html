@@ -4,7 +4,7 @@
       <mat-card class="login-card">
         <mat-card-header>
           <div mat-card-avatar class="eco-avatar">
-            <mat-icon>person_add</mat-icon>
+            <mat-icon class="material-symbols-rounded">person_add</mat-icon>
           </div>
           <mat-card-title>Crear cuenta</mat-card-title>
           <mat-card-subtitle>Únete a EcoRutas y aporta al cambio</mat-card-subtitle>
@@ -41,7 +41,7 @@
               <mat-label>Contraseña</mat-label>
               <input matInput [type]="showPassword() ? 'text' : 'password'" formControlName="password" />
               <button mat-icon-button matSuffix type="button" (click)="showPassword.set(!showPassword())" class="password-toggle">
-                <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                <mat-icon class="material-symbols-rounded">{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
               @if (form.controls.password.errors?.['required'] && form.controls.password.touched) {
                 <mat-error>La contraseña es requerida</mat-error>
@@ -58,7 +58,7 @@
               <mat-label>Confirmar contraseña</mat-label>
               <input matInput [type]="showPasswordConfirm() ? 'text' : 'password'" formControlName="confirmPassword" />
               <button mat-icon-button matSuffix type="button" (click)="showPasswordConfirm.set(!showPasswordConfirm())" class="password-toggle">
-                <mat-icon>{{ showPasswordConfirm() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                <mat-icon class="material-symbols-rounded">{{ showPasswordConfirm() ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
               @if (form.controls.confirmPassword.errors?.['required'] && form.controls.confirmPassword.touched) {
                 <mat-error>Confirma tu contraseña</mat-error>
@@ -93,7 +93,7 @@
     </div>
     <div class="visual-panel">
       <div class="visual-content">
-        <mat-icon class="visual-icon">eco</mat-icon>
+        <mat-icon class="visual-icon material-symbols-rounded">eco</mat-icon>
         <h2>EcoRutas</h2>
         <p>Sumemos esfuerzos para una ciudad más limpia.</p>
       </div>

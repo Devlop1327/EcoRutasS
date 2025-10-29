@@ -9,10 +9,30 @@
   align-items: center;
   min-height: 100vh;
   padding: 1.5rem;
+  position: relative;
   background:
     radial-gradient(900px 500px at 20% -10%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 60%),
     linear-gradient(135deg, #43a047, #1b5e20);
   background-size: cover;
+  overflow: hidden;
+}
+
+.login-container::before {
+  content: '';
+  position: absolute;
+  inset: -20% -10% 0 -10%;
+  background:
+    radial-gradient(1200px 600px at 110% -10%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 60%),
+    radial-gradient(800px 400px at -10% 120%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 60%);
+  filter: blur(10px);
+  animation: blobFloat 12s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes blobFloat {
+  0% { transform: translateY(0) translateX(0) scale(1); }
+  50% { transform: translateY(-12px) translateX(8px) scale(1.02); }
+  100% { transform: translateY(6px) translateX(-6px) scale(1.01); }
 }
 
 .auth-shell {
@@ -64,6 +84,15 @@
   color: #b7e1b9;
 }
 
+/* Ajustes tipográficos para Material Symbols (look moderno) */
+.material-symbols-rounded {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 500,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
 .login-card {
   width: 100%;
   max-width: 420px;
@@ -71,7 +100,8 @@
   overflow: hidden;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
   animation: fadeIn 0.5s ease-in-out;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.4);
 }
 
 @keyframes fadeIn {
@@ -94,7 +124,7 @@
 
 .login-card mat-card-content {
   padding: 2rem;
-  background: linear-gradient(180deg, #ffffff, #fbfffc);
+  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(251,255,252,0.9));
 }
 
 .divider{position:relative;display:flex;align-items:center;justify-content:center;margin:1.25rem 0;color:#5b6f76}
@@ -132,11 +162,30 @@ mat-form-field.mat-focused .mat-form-field-outline-thick {
   color: #2e7d32;
 }
 
+mat-form-field.mat-focused .mat-mdc-form-field-focus-overlay {
+  background-color: rgba(46,125,50,0.06);
+}
+
+mat-form-field .mat-mdc-text-field-wrapper {
+  transition: box-shadow .25s ease;
+}
+
+mat-form-field.mat-focused .mat-mdc-text-field-wrapper {
+  box-shadow: 0 0 0 4px rgba(46,125,50,0.08);
+}
+
 .actions {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   margin-top: 2rem;
+}
+
+.actions--inline {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: .25rem;
 }
 
 button[mat-raised-button] {
@@ -162,6 +211,12 @@ button[mat-raised-button] {
 
 button[mat-stroked-button]{height:48px;border-radius:10px;border-color:#2e7d32;color:#2e7d32;background:#fff}
 button[mat-stroked-button]:hover{background:rgba(46,125,50,.07)}
+
+mat-checkbox {
+  --mdc-checkbox-selected-icon-color: #2e7d32;
+  --mdc-checkbox-selected-checkmark-color: #fff;
+  --mdc-checkbox-selected-focus-state-layer-color: rgba(46,125,50,0.08);
+}
 
 .register-link {
   text-align: center;

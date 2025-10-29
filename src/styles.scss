@@ -1,1 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* Configuración global de Material Symbols (look moderno por defecto) */
+.material-symbols-rounded,
+.material-symbols-outlined,
+.material-symbols-sharp {
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 600,
+    'GRAD' 0,
+    'opsz' 24;
+}
