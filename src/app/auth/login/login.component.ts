@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router, RouterLink } from '@angular/router';
+import { animate, style, transition, trigger, state } from '@angular/animations';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -27,7 +28,11 @@ import { AuthService } from '../../core/services/auth.service';
     RouterLink
   ],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  styleUrls: ['./login.component.scss'],
+  animations: [trigger('fadeSlideInOut', [transition(':enter', [style({ opacity: 0, transform: 'translateY(20px)' }), animate('0.3s ease-out', style({ opacity: 1, transform: 'translateY(0)' }))])]), trigger('rotateIcon', [state('in', style({ transform: 'rotate(0deg)' })), state('out', style({ transform: 'rotate(360deg)' })), transition('in => out', animate('0.5s ease-in-out')), transition('out => in', animate('0.5s ease-in-out'))])],
+  host: {
+    class: 'app-login'
+  }
 })
 export class LoginComponent {
   private authService = inject(AuthService);
@@ -37,6 +42,7 @@ export class LoginComponent {
 
   showPassword = signal(false);
   loading = signal(false);
+  error = signal<string | null>(null);
 
   form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -118,3 +124,7 @@ export class LoginComponent {
     });
   }
 }
+
+
+
+
