@@ -1,5 +1,8 @@
 <div class="map-layout">
   <aside class="side">
+    <a class="back-btn" routerLink="/dashboard" aria-label="Volver al dashboard" title="Volver">
+      <mat-icon [fontSet]="'material-symbols-rounded'" fontIcon="arrow_back"></mat-icon>
+    </a>
     <h2 class="title">Rutas disponibles</h2>
     @if (loading()) {
       <div class="muted">Cargando rutas...</div>

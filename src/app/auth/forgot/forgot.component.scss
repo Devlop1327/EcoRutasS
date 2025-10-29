@@ -1,1 +1,87 @@
-.login-container{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:24px}.auth-shell{display:grid;grid-template-columns:1fr 1fr;max-width:1100px;width:100%;background:transparent;gap:24px}.form-panel{display:flex;align-items:center;justify-content:center}.login-card{width:100%;max-width:460px}.eco-avatar{background:rgba(76,175,80,.15);color:#2e7d32;border-radius:50%;display:flex;align-items:center;justify-content:center}.full-width{width:100%}.actions{display:flex;align-items:center;gap:12px;justify-content:space-between;margin-top:8px}.visual-panel{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(76,175,80,.08),rgba(33,150,243,.08));border-radius:16px}.visual-content{text-align:center;padding:32px}.visual-icon{font-size:72px;width:72px;height:72px;color:#2e7d32;margin-bottom:8px}.error{color:#d32f2f;margin-bottom:8px}.success{color:#2e7d32;margin:12px 0}
+// Estilos renovados para Restablecer contraseña (coherentes con Login/Registro)
+:host { display: block; }
+
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1.5rem;
+  background:
+    radial-gradient(900px 500px at 20% -10%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 60%),
+    linear-gradient(135deg, #43a047, #1b5e20);
+}
+
+.auth-shell {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-width: 1000px;
+  width: 100%;
+  gap: 2rem;
+}
+
+.form-panel { display: flex; align-items: center; justify-content: center; }
+
+.login-card {
+  width: 100%;
+  max-width: 460px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 18px 50px rgba(0,0,0,.25);
+  backdrop-filter: blur(6px);
+}
+
+.login-card mat-card-header {
+  background: linear-gradient(180deg, #2e7d32, #256f2a);
+  color: #fff;
+  padding: 1.5rem;
+}
+
+.login-card mat-card-content {
+  background: linear-gradient(180deg, #ffffff, #fbfffc);
+  padding: 2rem;
+}
+
+.eco-avatar {
+  background: rgba(255,255,255,.2);
+  color: #e8f5e9;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.full-width { width: 100%; }
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.visual-panel {
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(1200px 600px at 80% -20%, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 60%),
+              linear-gradient(135deg, #2e7d32, #0f3d18);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0,0,0,.28);
+}
+
+.visual-content { text-align: center; padding: 32px; color: #e8f5e9; }
+.visual-icon { font-size: 68px; width: 68px; height: 68px; color: #b7e1b9; margin-bottom: 8px; }
+
+.error { color: #b71c1c; padding: 10px 12px; background: #ffebee; border-radius: 8px; margin-bottom: 8px; }
+.success { color: #1b5e20; padding: 10px 12px; background: #e8f5e9; border-radius: 8px; margin: 12px 0; }
+
+.divider{position:relative;display:flex;align-items:center;justify-content:center;margin:1rem 0;color:#5b6f76}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,#e9edef,transparent)}
+.divider span{margin:0 10px;font-size:.85rem;background:#fff;padding:0 6px;border-radius:999px;border:1px solid #eef2f7;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+
+button[mat-raised-button]{height:48px;border-radius:10px;text-transform:uppercase;letter-spacing:.5px;transition:all .3s ease}
+button[mat-raised-button]:not(:disabled){background:#2e7d32;color:#fff}
+button[mat-raised-button]:hover:not(:disabled){background:#1b5e20;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+
+@media (max-width: 900px){
+  .auth-shell{grid-template-columns:1fr}
+  .visual-panel{display:none}
+}

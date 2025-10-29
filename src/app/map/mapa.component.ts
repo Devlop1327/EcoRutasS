@@ -1,6 +1,8 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RecoleccionService } from '../core/services/recoleccion.service';
+import { MatIconModule } from '@angular/material/icon';
+import { RouterModule } from '@angular/router';
 
 // Coordenadas aproximadas de Buenaventura, Colombia
 const BV_COORDS: [number, number] = [3.882, -77.031];
@@ -8,7 +10,7 @@ const BV_COORDS: [number, number] = [3.882, -77.031];
 @Component({
   selector: 'app-mapa',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule, MatIconModule],
   templateUrl: './mapa.component.html',
   styleUrls: ['./mapa.component.scss']
 })
