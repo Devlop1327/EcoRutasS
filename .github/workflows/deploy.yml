@@ -33,8 +33,12 @@ jobs:
       - name: Detect dist output
         id: artifact
         run: |
-          OUT_DIR=$(ls -d dist/* | head -n1)
-          test -d "$OUT_DIR" || (echo "No se encontró carpeta dist/*" && exit 1)
+          # Preferir 'dist/*/browser' (Angular moderno)
+          OUT_DIR=$(ls -d dist/*/browser 2>/dev/null | head -n1)
+          if [ -z "$OUT_DIR" ]; then
+            OUT_DIR=$(ls -d dist/* | head -n1)
+          fi
+          test -d "$OUT_DIR" || (echo "No se encontró carpeta dist/* ni dist/*/browser" && exit 1)
           echo "OUT_DIR=$OUT_DIR" >> $GITHUB_OUTPUT
 
       - name: Create SPA .htaccess
