@@ -1,0 +1,81 @@
+name: Build & Deploy to Ubuntu (Apache, no root)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Set build config env
+        run: echo "NG_BUILD_CONFIG=${{ secrets.NG_BUILD_CONFIG }}" >> $GITHUB_ENV
+
+      - name: Angular build
+        run: |
+          npx ng version
+          npx ng build --configuration=${NG_BUILD_CONFIG:-production}
+
+      - name: Detect dist output
+        id: artifact
+        run: |
+          OUT_DIR=$(ls -d dist/* | head -n1)
+          test -d "$OUT_DIR" || (echo "No se encontró carpeta dist/*" && exit 1)
+          echo "OUT_DIR=$OUT_DIR" >> $GITHUB_OUTPUT
+
+      - name: Create SPA .htaccess
+        run: |
+          cat > .htaccess <<'EOF'
+          RewriteEngine On
+          RewriteBase /
+          RewriteRule ^index\.html$ - [L]
+          RewriteCond %{REQUEST_FILENAME} !-f
+          RewriteCond %{REQUEST_FILENAME} !-d
+          RewriteRule . /index.html [L]
+          EOF
+          cp .htaccess "${{ steps.artifact.outputs.OUT_DIR }}/.htaccess"
+
+      - name: Pack artifact
+        run: |
+          tar -czf build.tar.gz -C "${{ steps.artifact.outputs.OUT_DIR }}" .
+
+      - name: Copy to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "build.tar.gz"
+          target: "/tmp"
+
+      - name: Deploy on server (no sudo)
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+            mkdir -p ${{ secrets.TARGET_DIR }}
+            rm -rf ${{ secrets.TARGET_DIR }}/*
+            tar -xzf /tmp/build.tar.gz -C ${{ secrets.TARGET_DIR }}
+            rm -f /tmp/build.tar.gz
+            find ${{ secrets.TARGET_DIR }} -type d -exec chmod 755 {} \; || true
+            find ${{ secrets.TARGET_DIR }} -type f -exec chmod 644 {} \; || true
+            echo "Deployed at $(date -u +"%Y-%m-%dT%H:%M:%SZ")" > ${{ secrets.TARGET_DIR }}/DEPLOYED.txt
