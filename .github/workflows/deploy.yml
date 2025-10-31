@@ -23,12 +23,14 @@ jobs:
         run: npm ci
 
       - name: Set build config env
-        run: echo "NG_BUILD_CONFIG=${{ secrets.NG_BUILD_CONFIG }}" >> $GITHUB_ENV
+        run: |
+          echo "NG_BUILD_CONFIG=${{ secrets.NG_BUILD_CONFIG }}" >> $GITHUB_ENV
+          echo "BASE_HREF=${{ secrets.BASE_HREF }}" >> $GITHUB_ENV
 
       - name: Angular build
         run: |
           npx ng version
-          npx ng build --configuration=${NG_BUILD_CONFIG:-production}
+          npx ng build --configuration=${NG_BUILD_CONFIG:-production} $( [ -n "${BASE_HREF}" ] && echo "--base-href=${BASE_HREF}" )
 
       - name: Detect dist output
         id: artifact
@@ -43,13 +45,19 @@ jobs:
 
       - name: Create SPA .htaccess
         run: |
-          cat > .htaccess <<'EOF'
+          BH=${BASE_HREF:-/}
+          # Asegurar que termine en '/'
+          case "$BH" in
+            */) : ;;
+            *) BH="$BH/" ;;
+          esac
+          cat > .htaccess <<EOF
           RewriteEngine On
-          RewriteBase /
+          RewriteBase $BH
           RewriteRule ^index\.html$ - [L]
           RewriteCond %{REQUEST_FILENAME} !-f
           RewriteCond %{REQUEST_FILENAME} !-d
-          RewriteRule . /index.html [L]
+          RewriteRule . ${BH}index.html [L]
           EOF
           cp .htaccess "${{ steps.artifact.outputs.OUT_DIR }}/.htaccess"
 
