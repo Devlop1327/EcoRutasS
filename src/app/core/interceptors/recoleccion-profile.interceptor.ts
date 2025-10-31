@@ -17,6 +17,16 @@ export const recoleccionProfileInterceptor: HttpInterceptorFn = (req, next) => {
       return next(req);
     }
 
+    // Normaliza path real bajo /api aunque venga por proxy /recoleccion
+    const pathFromProxy = isProxyPath ? reqUrl.pathname.substring(proxyBase.length) || '/' : reqUrl.pathname;
+    const normalizedPath = pathFromProxy.startsWith('/api') ? pathFromProxy : `/api${pathFromProxy}`;
+
+    // ÚNICA excepción: /api/calles NO requiere perfil_id
+    const skipPerfilForCalles = normalizedPath.startsWith('/api/calles');
+    if (skipPerfilForCalles) {
+      return next(req);
+    }
+
     const PERFIL_ID = environment.profileId || '3d9cdfd5-f6cb-4d85-b18c-5dd3a2043b75';
 
     // Normaliza: la API exige 'perfil_id'. Quitamos 'profile_id' si vino y no duplicamos.
@@ -31,7 +41,7 @@ export const recoleccionProfileInterceptor: HttpInterceptorFn = (req, next) => {
 
     const cloned = req.clone({
       url: reqUrl.toString(),
-      setHeaders: { 'x-perfil-id': PERFIL_ID }
+      setHeaders: { 'x-perfil-id': PERFIL_ID, 'Accept': 'application/json' }
     });
     return next(cloned);
   } catch {

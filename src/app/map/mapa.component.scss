@@ -22,3 +22,19 @@
 @media (hover: none) and (pointer: coarse){
   .back-btn{width:44px;height:44px;font-size:20px;top:68px}
 }
+
+/* --- UI extra --- */
+.item.selected{border-color:#4ade80;background:#f0fdf4}
+.controls{display:flex;gap:10px;align-items:center;margin-top:12px}
+.controls .status{margin-left:6px}
+
+.btn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;border:1px solid transparent;font-weight:600;cursor:pointer;transition:transform .08s ease, box-shadow .12s ease, background .15s ease;color:#fff;box-shadow:0 4px 10px rgba(0,0,0,.12)}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.6;cursor:not-allowed;box-shadow:none}
+.btn .btn-icon{font-size:14px;line-height:1}
+
+.btn-primary{background:#059669;border-color:#047857}
+.btn-primary:hover{background:#0ea271}
+
+.btn-danger{background:#dc2626;border-color:#b91c1c}
+.btn-danger:hover{background:#ef4444}

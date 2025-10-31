@@ -83,7 +83,10 @@
 
             <div class="actions">
               <button mat-raised-button color="primary" type="submit" [disabled]="loading() || form.invalid || passwordMismatch()">
-                @if (loading()) { <mat-spinner diameter="20"></mat-spinner> } @else { Crear cuenta }
+                @if (loading()) { <mat-spinner diameter="20"></mat-spinner> } @else {
+                  <mat-icon class="material-symbols-rounded btn-leading">how_to_reg</mat-icon>
+                  <span>Crear cuenta</span>
+                }
               </button>
               <a mat-button routerLink="/auth/login">¿Ya tienes cuenta? Inicia sesión</a>
             </div>

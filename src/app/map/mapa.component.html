@@ -11,7 +11,12 @@
     } @else {
       <ul class="list">
         @for (r of rutas(); track r.id) {
-          <li class="item">{{ r.nombre }}</li>
+          <li class="item"
+              [class.selected]="selectedRutaId() === r.id"
+              (click)="selectRuta(r.id)"
+              title="Seleccionar ruta">
+            {{ r.nombre }}
+          </li>
         }
         @if (rutas().length === 0) {
           <li class="muted">Sin rutas</li>
@@ -25,7 +30,10 @@
     } @else {
       <ul class="list">
         @for (v of vehiculos(); track v.id) {
-          <li class="item vehicle">
+          <li class="item vehicle"
+              [class.selected]="selectedVehiculoId() === v.id"
+              (click)="selectVehiculo(v.id)"
+              title="Seleccionar vehículo">
             <span class="icon">🚛</span>
             {{ v.placa || v.id }}
           </li>
@@ -35,6 +43,25 @@
         }
       </ul>
     }
+
+    <!-- Controles de conductor -->
+    <div class="controls mt" appConductorOnly>
+      <button class="btn btn-primary" (click)="iniciarRecorrido()"
+              [disabled]="!selectedRutaId() || !selectedVehiculoId() || !!currentRecorridoId()"
+              title="Iniciar recorrido">
+        <span class="btn-icon">▶</span>
+        <span>Iniciar</span>
+      </button>
+      <button class="btn btn-danger" (click)="finalizarRecorrido()"
+              [disabled]="!currentRecorridoId()"
+              title="Finalizar recorrido">
+        <span class="btn-icon">■</span>
+        <span>Finalizar</span>
+      </button>
+      @if (currentRecorridoId()) {
+        <div class="muted small status">Recorrido activo: {{ currentRecorridoId() }}</div>
+      }
+    </div>
   </aside>
   <section class="map-wrap">
     <div id="map" class="map"></div>

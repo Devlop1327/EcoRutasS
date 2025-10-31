@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { RecoleccionService } from '../core/services/recoleccion.service';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
+import { ApiService, type UUID } from '../services/api.service';
+import { ConductorOnlyDirective } from '../core/directives/conductor-only.directive';
+import { environment } from '../../environments/environment';
 
 // Coordenadas aproximadas de Buenaventura, Colombia
 const BV_COORDS: [number, number] = [3.882, -77.031];
@@ -10,17 +13,23 @@ const BV_COORDS: [number, number] = [3.882, -77.031];
 @Component({
   selector: 'app-mapa',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule],
+  imports: [CommonModule, RouterModule, MatIconModule, ConductorOnlyDirective],
   templateUrl: './mapa.component.html',
   styleUrls: ['./mapa.component.scss']
 })
 export class MapaComponent implements OnInit, OnDestroy {
   private reco = inject(RecoleccionService);
+  private api = inject(ApiService);
 
   loading = signal(true);
   error = signal<string | null>(null);
   rutas = signal<Array<{ id: string; nombre: string; coordenadas?: Array<[number, number]> }>>([]);
   vehiculos = signal<Array<{ id: string; placa?: string; lat?: number; lng?: number }>>([]);
+
+  // Selección para iniciar/finalizar (solo conductor)
+  selectedRutaId = signal<UUID | null>(null);
+  selectedVehiculoId = signal<UUID | null>(null);
+  currentRecorridoId = signal<UUID | null>(null);
 
   private leafletLoaded = false;
   private map: any | null = null;
@@ -151,5 +160,42 @@ export class MapaComponent implements OnInit, OnDestroy {
 
     // marcador de referencia centro Buenaventura
     L.marker(BV_COORDS).addTo(this.map).bindPopup('Buenaventura');
+  }
+
+  // UI handlers selección
+  selectRuta(id: UUID) {
+    this.selectedRutaId.set(id);
+  }
+
+  selectVehiculo(id: UUID) {
+    this.selectedVehiculoId.set(id);
+  }
+
+  // Acciones conductor
+  async iniciarRecorrido() {
+    const ruta_id = this.selectedRutaId();
+    const vehiculo_id = this.selectedVehiculoId();
+    const perfil_id = (environment as any).profileId as UUID;
+    if (!ruta_id || !vehiculo_id || !perfil_id) return;
+    try {
+      const res = await this.api.iniciarRecorrido({ ruta_id, vehiculo_id, perfil_id }).toPromise();
+      // Asumimos que la API devuelve el id del recorrido creado en body.id (ajustar si difiere)
+      const recId = (res as any)?.body?.id as UUID | null;
+      if (recId) this.currentRecorridoId.set(recId);
+    } catch (e) {
+      console.error('No se pudo iniciar el recorrido', e);
+    }
+  }
+
+  async finalizarRecorrido() {
+    const recId = this.currentRecorridoId();
+    const perfil_id = (environment as any).profileId as UUID;
+    if (!recId || !perfil_id) return;
+    try {
+      await this.api.finalizarRecorrido(recId, perfil_id).toPromise();
+      this.currentRecorridoId.set(null);
+    } catch (e) {
+      console.error('No se pudo finalizar el recorrido', e);
+    }
   }
 }
