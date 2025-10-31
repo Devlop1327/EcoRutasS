@@ -1,8 +1,8 @@
 <div class="login-container">
   <div class="auth-shell">
     <div class="form-panel">
-      <mat-card class="login-card">
-        <mat-card-header>
+      <mat-card class="login-card floating-card">
+        <mat-card-header class="login-header">
           <div mat-card-avatar class="eco-avatar">
             <mat-icon class="material-symbols-rounded">mail</mat-icon>
           </div>
@@ -35,9 +35,13 @@
               </div>
             </form>
           } @else {
-            <div class="success">Revisa tu correo para continuar con el restablecimiento.</div>
-            <div class="actions">
-              <a mat-flat-button color="primary" routerLink="/auth/login">Ir al login</a>
+            <div class="success-message">
+              <mat-icon class="success-icon">check_circle</mat-icon>
+              <h3>¡Correo enviado!</h3>
+              <p>Revisa tu bandeja de entrada y sigue las instrucciones para restablecer tu contraseña.</p>
+              <div class="actions">
+                <a mat-raised-button color="primary" routerLink="/auth/login">Volver al inicio de sesión</a>
+              </div>
             </div>
           }
         </mat-card-content>
@@ -45,7 +49,7 @@
     </div>
     <div class="visual-panel">
       <div class="visual-content">
-        <mat-icon class="visual-icon material-symbols-rounded">eco</mat-icon>
+        <img src="assets/eco.png" alt="EcoRutas" class="visual-logo" />
         <h2>EcoRutas</h2>
         <p>Seguimos cuidando el ambiente contigo.</p>
       </div>

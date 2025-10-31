@@ -1,6 +1,9 @@
+@use '@angular/material' as mat;
+
 :host {
   display: block;
   height: 100%;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 50%, #a5d6a7 100%);
 }
 
 .login-container {
@@ -10,78 +13,265 @@
   min-height: 100vh;
   padding: 1.5rem;
   position: relative;
-  background:
-    radial-gradient(900px 500px at 20% -10%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 60%),
-    linear-gradient(135deg, #43a047, #1b5e20);
-  background-size: cover;
   overflow: hidden;
 }
 
 .login-container::before {
   content: '';
   position: absolute;
-  inset: -20% -10% 0 -10%;
-  background:
-    radial-gradient(1200px 600px at 110% -10%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 60%),
-    radial-gradient(800px 400px at -10% 120%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 60%);
-  filter: blur(10px);
-  animation: blobFloat 12s ease-in-out infinite alternate;
-  pointer-events: none;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,0.8) 0%, transparent 30%),
+    radial-gradient(circle at 80% 70%, rgba(200, 230, 201, 0.6) 0%, transparent 30%);
+  animation: gradientPulse 15s ease infinite;
+  z-index: 0;
 }
 
-@keyframes blobFloat {
-  0% { transform: translateY(0) translateX(0) scale(1); }
-  50% { transform: translateY(-12px) translateX(8px) scale(1.02); }
-  100% { transform: translateY(6px) translateX(-6px) scale(1.01); }
+@keyframes gradientPulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.8; }
+  100% { opacity: 1; }
 }
 
-.auth-shell {
+auth-shell {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
   width: 100%;
   max-width: 1000px;
+  position: relative;
+  z-index: 1;
 }
 
 .form-panel {
   display: flex;
   align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
 }
 
 .visual-panel {
   position: relative;
-  border-radius: 16px;
+  border-radius: 24px;
   overflow: hidden;
-  background: radial-gradient(1200px 600px at 80% -20%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 60%),
-              linear-gradient(135deg, #2e7d32, #0f3d18);
-  box-shadow: 0 16px 40px rgba(0,0,0,0.28);
+  background: linear-gradient(145deg, #2e7d32, #1b5e20);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.visual-panel:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.2);
 }
 
 .visual-content {
   text-align: center;
-  color: #e8f5e9;
-  padding: 2rem;
+  color: #fff;
+  padding: 3rem 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.visual-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+    radial-gradient(circle at 20% 80%, rgba(0,0,0,0.1) 0%, transparent 50%);
+  z-index: -1;
 }
 
 .visual-content h2 {
-  margin: 0.5rem 0 0.25rem;
-  font-weight: 600;
-  letter-spacing: .2px;
+  margin: 1.5rem 0 0.5rem;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .visual-content p {
   margin: 0;
   opacity: 0.9;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  max-width: 320px;
+  margin: 0 auto;
 }
 
 .visual-icon {
-  font-size: 68px;
-  width: 68px;
-  height: 68px;
-  color: #b7e1b9;
+  font-size: 72px;
+  width: 72px;
+  height: 72px;
+  color: #fff;
+  text-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+
+.visual-panel:hover .visual-icon {
+  transform: scale(1.1);
+}
+
+/* Estilos generales */
+:host {
+  display: block;
+  height: 100vh;
+  width: 100%;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  overflow: hidden;
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Efecto de burbujas */
+.login-container::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="30" cy="30" r="3" fill="%2343a047" opacity="0.2"/><circle cx="80" cy="80" r="4" fill="%432e7d32" opacity="0.15"/><circle cx="150" cy="40" r="5" fill="%432e7d32" opacity="0.1"/><circle cx="40" cy="150" r="4" fill="%4343a047" opacity="0.15"/><circle cx="120" cy="120" r="3" fill="%4343a047" opacity="0.2"/><circle cx="180" cy="180" r="5" fill="%432e7d32" opacity="0.1"/></svg>');
+  background-size: 200px;
+  opacity: 0.6;
+  z-index: 0;
+}
+
+.auth-shell {
+  display: flex;
+  max-width: 1200px;
+  width: 100%;
+  background: white;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
+  height: 80vh;
+  min-height: 600px;
+}
+
+.form-panel {
+  flex: 1;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  position: relative;
+  z-index: 2;
+}
+
+.visual-panel {
+  flex: 1;
+  background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
+  color: white;
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.visual-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="10" cy="10" r="1" fill="%23ffffff" opacity="0.2"/><circle cx="30" cy="20" r="1" fill="%23ffffff" opacity="0.15"/><circle cx="70" cy="10" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="90" cy="30" r="1" fill="%23ffffff" opacity="0.15"/><circle cx="80" cy="80" r="1" fill="%23ffffff" opacity="0.2"/><circle cx="20" cy="90" r="1" fill="%23ffffff" opacity="0.1"/></svg>');
+  background-size: 100px;
+  opacity: 0.3;
+  z-index: 1;
+}
+
+.visual-content {
+  position: relative;
+  z-index: 2;
+  max-width: 400px;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.visual-content:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.visual-logo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1.5rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+  transition: transform 0.3s ease;
+}
+
+.visual-content:hover .visual-logo {
+  transform: scale(1.05) rotate(-5deg);
+}
+
+.visual-content h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.visual-content p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  opacity: 0.9;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Ajustes responsivos */
+@media (max-width: 960px) {
+  .auth-shell {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .form-panel, .visual-panel {
+    flex: none;
+    width: 100%;
+    padding: 2rem 1.5rem;
+  }
+  
+  .visual-panel {
+    padding: 3rem 1.5rem;
+  }
+  
+  .login-card {
+    max-width: 100%;
+  }
 }
 
 /* Ajustes tipográficos para Material Symbols (look moderno) */
@@ -95,18 +285,259 @@
 
 .login-card {
   width: 100%;
-  max-width: 420px;
-  border-radius: 16px;
+  max-width: 400px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
-  animation: fadeIn 0.5s ease-in-out;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  border: 1px solid rgba(255,255,255,0.5);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.4);
+  background: rgba(255, 255, 255, 0.95);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.login-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.eco-avatar {
+  background: linear-gradient(135deg, #43a047, #2e7d32);
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.eco-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(67, 160, 71, 0.4);
+}
+
+.eco-avatar mat-icon {
+  color: white;
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+mat-card-header {
+  padding: 24px 24px 16px;
+  background: linear-gradient(135deg, #43a047, #2e7d32);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+mat-card-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%);
+  pointer-events: none;
+}
+
+mat-card-title {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  position: relative;
+  z-index: 1;
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+mat-card-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+  margin: 4px 0 0;
+  font-weight: 400;
+  position: relative;
+  z-index: 1;
+  font-size: 0.95rem;
+}
+
+mat-card-content {
+  padding: 24px;
+  background: white;
+}
+
+mat-form-field {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.actions--inline {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+button[mat-raised-button] {
+  height: 48px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  font-size: 1rem;
+  border-radius: 12px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #43a047, #2e7d32);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);
+}
+
+button[mat-raised-button]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(67, 160, 71, 0.4);
+}
+
+button[mat-raised-button]:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(67, 160, 71, 0.3);
+}
+
+button[mat-stroked-button] {
+  height: 48px;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+  color: #424242;
+  background: white;
+}
+
+button[mat-stroked-button]:hover {
+  background: rgba(0,0,0,0.02);
+  border-color: #bdbdbd;
+}
+
+.register-link {
+  text-align: center;
+  color: #2e7d32;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.register-link:hover {
+  color: #1b5e20;
+  text-decoration: underline;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0;
+  color: #757575;
+  font-size: 0.9rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.divider:not(:empty)::before {
+  margin-right: 1rem;
+}
+
+.divider:not(:empty)::after {
+  margin-left: 1rem;
+}
+
+.password-toggle {
+  color: #757575;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.password-toggle:hover {
+  opacity: 1;
+}
+
+/* Estilos para el checkbox "Recuérdame" */
+mat-checkbox {
+  --mdc-checkbox-selected-icon-color: #2e7d32;
+  --mdc-checkbox-selected-checkmark-color: #fff;
+  --mdc-checkbox-selected-focus-state-layer-color: rgba(46,125,50,0.08);
+  --mdc-checkbox-selected-hover-state-layer-color: rgba(46,125,50,0.08);
+  --mdc-checkbox-selected-pressed-state-layer-color: rgba(46,125,50,0.16);
+}
+
+/* Efecto de carga */
+mat-spinner {
+  margin: 0 auto;
+  --mdc-circular-progress-active-indicator-color: #fff;
+}
+
+/* Mejoras en la accesibilidad */
+:focus-visible {
+  outline: 2px solid #2e7d32;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Efecto de carga sutil */
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Efecto de elevación al pasar el ratón sobre la tarjeta */
+@keyframes cardHover {
+  from { transform: translateY(0); }
+  to { transform: translateY(-5px); }
 }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Efecto de tarjeta flotante */
+.floating-card {
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.5s ease-in-out;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.4);
+  transition: all 0.3s ease;
+}
+
+.floating-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.15);
 }
 
 .login-card mat-card-header {
