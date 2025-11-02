@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../core/services/auth.service';
 import { RecoleccionService } from '../core/services/recoleccion.service';
+import { AdminDataService } from '../core/services/admin-data.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -14,6 +15,7 @@ import { RecoleccionService } from '../core/services/recoleccion.service';
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private auth = inject(AuthService);
   private reco = inject(RecoleccionService);
+  private admin = inject(AdminDataService);
   private router = inject(Router);
 
   loading = signal(true);
@@ -56,8 +58,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     try {
       const [rutas, vehiculos] = await Promise.all([
-        this.reco.getRutas().catch(() => []),
-        this.reco.getVehiculos().catch(() => [])
+        this.admin.listRutas().catch(() => []),
+        this.admin.listVehiculos().catch(() => [])
       ]);
       this.rutasCount.set(rutas.length);
       this.vehiculosCount.set(vehiculos.length);
@@ -75,8 +77,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.pollId = window.setInterval(async () => {
         try {
           const [rutas, vehiculos] = await Promise.all([
-            this.reco.getRutas().catch(() => []),
-            this.reco.getVehiculos().catch(() => [])
+            this.admin.listRutas().catch(() => []),
+            this.admin.listVehiculos().catch(() => [])
           ]);
           const rc = rutas.length; const vc = vehiculos.length;
           this.rutasCount.set(rc); this.vehiculosCount.set(vc);

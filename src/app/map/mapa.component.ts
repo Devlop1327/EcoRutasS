@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 import { ApiService, type UUID } from '../services/api.service';
 import { ConductorOnlyDirective } from '../core/directives/conductor-only.directive';
 import { environment } from '../../environments/environment';
+import { AdminDataService } from '../core/services/admin-data.service';
 
 // Coordenadas aproximadas de Buenaventura, Colombia
 const BV_COORDS: [number, number] = [3.882, -77.031];
@@ -20,6 +21,7 @@ const BV_COORDS: [number, number] = [3.882, -77.031];
 export class MapaComponent implements OnInit, OnDestroy {
   private reco = inject(RecoleccionService);
   private api = inject(ApiService);
+  private admin = inject(AdminDataService);
 
   loading = signal(true);
   error = signal<string | null>(null);
@@ -30,16 +32,24 @@ export class MapaComponent implements OnInit, OnDestroy {
   selectedRutaId = signal<UUID | null>(null);
   selectedVehiculoId = signal<UUID | null>(null);
   currentRecorridoId = signal<UUID | null>(null);
+  isStarting = signal(false);
 
   private leafletLoaded = false;
   private map: any | null = null;
+  private selectedRutaLayer: any | null = null;
+  private liveMarker: any | null = null;
+  private posWatchId: number | null = null;
+  // Simulación
+  private simMarker: any | null = null;
+  private simTimerId: number | null = null;
+  private simIdx = 0;
 
   async ngOnInit() {
     try {
       await this.loadLeafletFromCdn();
       this.initMap();
       await Promise.all([this.loadRutas(), this.loadVehiculos()]);
-      this.drawRutas();
+      // No dibujar todas las rutas; solo cuando el usuario seleccione
       this.drawVehiculos();
     } catch (e: any) {
       this.error.set(e?.message || 'Error cargando el mapa');
@@ -53,12 +63,27 @@ export class MapaComponent implements OnInit, OnDestroy {
       this.map.remove();
       this.map = null;
     }
+    this.stopLiveTracking();
   }
 
   private async loadRutas() {
     try {
-      const rutas = await this.reco.getRutas();
-      this.rutas.set(rutas);
+      // Preferir nombres y geometrías desde Supabase
+      const supa = await this.admin.listRutas();
+      const mapped = (supa || []).map(r => ({
+        id: String(r.id || ''),
+        nombre: String(r.nombre || 'Ruta'),
+        coordenadas: r.coordenadas || (r.geometria?.type === 'LineString' && Array.isArray(r.geometria.coordinates)
+          ? r.geometria.coordinates.map((c: any) => [Number(c[1]), Number(c[0])])
+          : undefined)
+      })).filter(r => !!r.id);
+      // Si Supabase está vacío, caer a la API pública
+      if (!mapped.length) {
+        const rutasPublic = await this.reco.getRutas();
+        this.rutas.set(rutasPublic);
+      } else {
+        this.rutas.set(mapped);
+      }
     } catch (e: any) {
       this.error.set(e?.message || 'No se pudieron cargar las rutas');
     }
@@ -73,19 +98,20 @@ export class MapaComponent implements OnInit, OnDestroy {
     }
   }
 
-  private drawRutas() {
+  private drawSelectedRuta(ruta: { id: string; nombre: string; coordenadas?: Array<[number, number]> } | null) {
     const L: any = (window as any).L;
     if (!L || !this.map) return;
-
-    for (const ruta of this.rutas()) {
-      if (ruta.coordenadas && ruta.coordenadas.length > 1) {
-        L.polyline(ruta.coordenadas, {
-          color: '#059669',
-          weight: 3,
-          opacity: 0.7
-        }).addTo(this.map).bindPopup(ruta.nombre);
-      }
+    if (this.selectedRutaLayer) {
+      try { this.map.removeLayer(this.selectedRutaLayer); } catch {}
+      this.selectedRutaLayer = null;
     }
+    if (!ruta || !ruta.coordenadas || ruta.coordenadas.length < 2) return;
+    this.selectedRutaLayer = L.polyline(ruta.coordenadas, {
+      color: '#10b981',
+      weight: 5,
+      opacity: 0.9
+    }).addTo(this.map).bindPopup(ruta.nombre);
+    try { this.map.fitBounds(this.selectedRutaLayer.getBounds(), { padding: [24, 24] }); } catch {}
   }
 
   private drawVehiculos() {
@@ -165,6 +191,8 @@ export class MapaComponent implements OnInit, OnDestroy {
   // UI handlers selección
   selectRuta(id: UUID) {
     this.selectedRutaId.set(id);
+    const ruta = this.rutas().find(r => r.id === id) || null;
+    this.drawSelectedRuta(ruta);
   }
 
   selectVehiculo(id: UUID) {
@@ -173,6 +201,8 @@ export class MapaComponent implements OnInit, OnDestroy {
 
   // Acciones conductor
   async iniciarRecorrido() {
+    if (this.isStarting()) return;
+    this.isStarting.set(true);
     const ruta_id = this.selectedRutaId();
     const vehiculo_id = this.selectedVehiculoId();
     const perfil_id = (environment as any).profileId as UUID;
@@ -181,10 +211,38 @@ export class MapaComponent implements OnInit, OnDestroy {
       const res = await this.api.iniciarRecorrido({ ruta_id, vehiculo_id, perfil_id }).toPromise();
       // Asumimos que la API devuelve el id del recorrido creado en body.id (ajustar si difiere)
       const recId = (res as any)?.body?.id as UUID | null;
-      if (recId) this.currentRecorridoId.set(recId);
-    } catch (e) {
-      console.error('No se pudo iniciar el recorrido', e);
+      if (recId) {
+        this.currentRecorridoId.set(recId);
+        this.startSimulatedRun(recId);
+      }
+    } catch (e: any) {
+      const msg = e?.error?.message || e?.message || '';
+      const needsCreate = /selected ruta id is invalid/i.test(msg || '');
+      if (!needsCreate) {
+        console.error('No se pudo iniciar el recorrido', e);
+        this.isStarting.set(false);
+        return;
+      }
+      // Crear ruta en API y reintentar
+      try {
+        const ruta = this.rutas().find(r => r.id === ruta_id);
+        if (!ruta || !ruta.coordenadas || ruta.coordenadas.length < 2) return;
+        // convertir a GeoJSON LineString [lng, lat]
+        const shape = { type: 'LineString', coordinates: ruta.coordenadas.map(p => [p[1], p[0]]) };
+        const creado = await this.reco.crearRuta({ nombre_ruta: ruta.nombre, shape });
+        const newId = (creado?.id ?? creado?.data?.id ?? creado?.ruta?.id) as UUID | null;
+        if (!newId) return;
+        const res2 = await this.api.iniciarRecorrido({ ruta_id: newId, vehiculo_id, perfil_id }).toPromise();
+        const recId2 = (res2 as any)?.body?.id as UUID | null;
+        if (recId2) {
+          this.currentRecorridoId.set(recId2);
+          this.startSimulatedRun(recId2);
+        }
+      } catch (ee) {
+        console.error('No se pudo crear la ruta o iniciar el recorrido', ee);
+      }
     }
+    this.isStarting.set(false);
   }
 
   async finalizarRecorrido() {
@@ -194,8 +252,82 @@ export class MapaComponent implements OnInit, OnDestroy {
     try {
       await this.api.finalizarRecorrido(recId, perfil_id).toPromise();
       this.currentRecorridoId.set(null);
+      this.stopLiveTracking();
+      this.stopSimulatedRun();
     } catch (e) {
       console.error('No se pudo finalizar el recorrido', e);
+    }
+  }
+
+  private startLiveTracking(recorrido_id: UUID) {
+    const L: any = (window as any).L;
+    if (!('geolocation' in navigator)) return;
+    if (this.posWatchId != null) this.stopLiveTracking();
+    this.posWatchId = navigator.geolocation.watchPosition(
+      async pos => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        try {
+          const perfil_id = (environment as any).profileId as UUID;
+          await this.api.registrarPosicion(recorrido_id, { lat, lon, perfil_id }).toPromise();
+        } catch {}
+        if (this.map && L) {
+          if (this.liveMarker) {
+            try { this.liveMarker.setLatLng([lat, lon]); } catch {}
+          } else {
+            this.liveMarker = L.marker([lat, lon]).addTo(this.map).bindPopup('Mi posición');
+          }
+        }
+      },
+      _err => {},
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+    );
+  }
+
+  private stopLiveTracking() {
+    if (this.posWatchId != null) {
+      try { navigator.geolocation.clearWatch(this.posWatchId); } catch {}
+      this.posWatchId = null;
+    }
+    if (this.map && this.liveMarker) {
+      try { this.map.removeLayer(this.liveMarker); } catch {}
+      this.liveMarker = null;
+    }
+  }
+
+  // Simulación de movimiento sobre la ruta seleccionada
+  private startSimulatedRun(recorrido_id: UUID) {
+    const L: any = (window as any).L;
+    const ruta = this.rutas().find(r => r.id === this.selectedRutaId());
+    if (!this.map || !L || !ruta || !ruta.coordenadas || ruta.coordenadas.length < 2) return;
+    this.stopSimulatedRun();
+    this.simIdx = 0;
+    const points = ruta.coordenadas.slice(); // [lat,lng]
+    this.simMarker = L.circleMarker(points[0], { radius: 6, color: '#2563eb', weight: 3, fillColor: '#60a5fa', fillOpacity: 0.9 })
+      .addTo(this.map)
+      .bindPopup('Seguimiento');
+
+    const perfil_id = (environment as any).profileId as UUID;
+    const stepMs = 5000; // 1 seg por punto
+
+    this.simTimerId = window.setInterval(async () => {
+      this.simIdx = (this.simIdx + 1) % points.length;
+      const [lat, lng] = points[this.simIdx];
+      try { this.simMarker.setLatLng([lat, lng]); } catch {}
+      try {
+        await this.api.registrarPosicion(recorrido_id, { lat, lon: lng, perfil_id }).toPromise();
+      } catch {}
+    }, stepMs);
+  }
+
+  private stopSimulatedRun() {
+    if (this.simTimerId != null) {
+      try { window.clearInterval(this.simTimerId); } catch {}
+      this.simTimerId = null;
+    }
+    if (this.map && this.simMarker) {
+      try { this.map.removeLayer(this.simMarker); } catch {}
+      this.simMarker = null;
     }
   }
 }
