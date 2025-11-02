@@ -1,4 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
+@import 'leaflet/dist/leaflet.css';
+@import 'leaflet-draw/dist/leaflet.draw.css';
 
 /* Configuración global de Material Symbols (look moderno por defecto) */
 .material-symbols-rounded,
@@ -10,3 +12,26 @@
     'GRAD' 0,
     'opsz' 24;
 }
+
+/* Variables y tema claro/oscuro */
+:root {
+  --bg: #ffffff;
+  --fg: #111827;
+  --muted: #6b7280;
+  --card: #ffffff;
+  --border: #e5e7eb;
+}
+html.dark {
+  --bg: #0b1020;
+  --fg: #e5e7eb;
+  --muted: #9ca3af;
+  --card: #0f172a;
+  --border: #374151;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+a { color: inherit; }

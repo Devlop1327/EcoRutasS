@@ -42,10 +42,11 @@
             <div class="row">
               <div class="col">
                 <div class="title">{{ r.nombre }}</div>
-                <div class="subtitle">{{ r.zona || '—' }}</div>
+                <div class="subtitle">Actualizada: {{ r.updated_at || '—' }}</div>
               </div>
               <div class="col small">
-                <a mat-button [routerLink]="['/admin/rutas/editor']" [queryParams]="{ id: r.id }">Ver en editor</a>
+                <a mat-button [routerLink]="['/admin/rutas/editor']" [queryParams]="{ id: r.id }">Editar</a>
+                <button mat-button color="warn" (click)="eliminar(r.id)" [disabled]="loading()">Eliminar</button>
               </div>
             </div>
           </mat-card>

@@ -25,8 +25,7 @@ export class RecoleccionService {
   private base = (environment.recoleccionApiProxy || environment.recoleccionApiUrl) + '/api';
 
   async getRutas(): Promise<Ruta[]> {
-    const params = new HttpParams().set('perfil_id', environment.profileId);
-    const json = await firstValueFrom(this.http.get<any>(`${this.base}/rutas`, { withCredentials: false, params }));
+    const json = await firstValueFrom(this.http.get<any>(`${this.base}/rutas`, { withCredentials: false }));
     const data = json?.data ?? json; // normaliza response.data
     return (data || []).map((r: any) => ({
       id: String(r.id ?? r.ext_id ?? r.codigo ?? ''),
@@ -64,8 +63,7 @@ export class RecoleccionService {
   }
 
   async getVehiculos(): Promise<Vehiculo[]> {
-    const params = new HttpParams().set('perfil_id', environment.profileId);
-    const json = await firstValueFrom(this.http.get<any>(`${this.base}/vehiculos`, { withCredentials: false, params }));
+    const json = await firstValueFrom(this.http.get<any>(`${this.base}/vehiculos`, { withCredentials: false }));
     const data = json?.data ?? json;
     return (data || []).map((v: any) => ({
       id: String(v.id ?? v.ext_id ?? v.codigo ?? ''),

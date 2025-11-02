@@ -32,6 +32,10 @@ export const routes: Routes = [
         path: 'rutas/editor',
         loadComponent: () => import('./admin/rutas/editor-ruta.component').then(m => m.EditorRutaComponent)
       },
+      {
+        path: 'calles',
+        loadComponent: () => import('./admin/calles/calles.component').then(m => m.CallesComponent)
+      },
       { path: '', redirectTo: 'vehiculos', pathMatch: 'full' }
     ]
   },

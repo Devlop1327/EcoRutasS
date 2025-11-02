@@ -1,0 +1,12 @@
+.admin-page{display:flex;flex-direction:column;gap:12px}
+.page-header{display:flex;align-items:center;gap:12px}
+.page-header .back{text-decoration:none;color:#2563eb;font-weight:600}
+.tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.form{display:flex;align-items:flex-end;gap:10px}
+.form input{padding:8px 10px;border:1px solid #e5e7eb;border-radius:6px;min-width:220px}
+.form button{padding:8px 14px;border:none;border-radius:6px;background:#2563eb;color:#fff;cursor:pointer}
+.form button[disabled]{opacity:.6;cursor:not-allowed}
+.map{height:420px;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+.msg{padding:6px 10px;border-radius:6px;font-weight:600}
+.msg.ok{background:#ecfdf5;color:#065f46}
+.msg.error{background:#fee2e2;color:#991b1b}

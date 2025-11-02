@@ -8,6 +8,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import * as L from 'leaflet';
+import 'leaflet-draw';
+import { AdminDataService } from '../../core/services/admin-data.service';
 
 @Component({
   selector: 'app-editor-ruta',
@@ -29,6 +32,7 @@ export class EditorRutaComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private reco = inject(RecoleccionService);
+  private admin = inject(AdminDataService);
 
   loading = signal(false);
   error = signal<string | null>(null);
@@ -40,6 +44,7 @@ export class EditorRutaComponent implements OnInit, OnDestroy {
 
   private map: any;
   private layerGroup: any;
+  private drawnItems: any;
   puntos = signal<Array<[number, number]>>([]); // [lat, lng]
 
   async ngOnInit() {
@@ -47,8 +52,12 @@ export class EditorRutaComponent implements OnInit, OnDestroy {
     const id = this.route.snapshot.queryParamMap.get('id');
     if (id) {
       try {
-        const data: any = await this.reco.getRutaById(id);
-        const coords = this.extractCoords(data?.coordenadas || data?.geometry || data?.shape || data?.coordinates);
+        // Primero intenta desde Supabase
+        const supa = await this.admin.getRuta(id);
+        const data: any = supa ?? await this.reco.getRutaById(id).catch(() => null);
+        const coords = this.extractCoords(
+          data?.coordenadas || data?.geometria || data?.geometry || data?.shape || data?.coordinates
+        );
         if (coords && coords.length) {
           this.puntos.set(coords);
           this.draw();
@@ -69,22 +78,53 @@ export class EditorRutaComponent implements OnInit, OnDestroy {
   }
 
   private initMap() {
-    const L: any = (window as any).L;
-    if (!L) return;
     this.map = L.map('editor-map', { center: [3.8801, -77.0283], zoom: 13 });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(this.map);
     this.layerGroup = L.layerGroup().addTo(this.map);
-    this.map.on('click', (e: any) => {
-      const lat = Number(e.latlng?.lat);
-      const lng = Number(e.latlng?.lng);
-      this.puntos.update(arr => [...arr, [lat, lng]]);
+    this.drawnItems = new L.FeatureGroup();
+    this.map.addLayer(this.drawnItems);
+
+    const drawControl = new (L as any).Control.Draw({
+      draw: {
+        polygon: false,
+        rectangle: false,
+        circle: false,
+        marker: false,
+        circlemarker: false,
+        polyline: { shapeOptions: { color: '#059669', weight: 3 } }
+      },
+      edit: { featureGroup: this.drawnItems, remove: true }
+    });
+    this.map.addControl(drawControl);
+
+    this.map.on((L as any).Draw.Event.CREATED, (e: any) => {
+      this.drawnItems.clearLayers();
+      const layer = e.layer;
+      this.drawnItems.addLayer(layer);
+      const latlngs = layer.getLatLngs().map((p: any) => [Number(p.lat), Number(p.lng)] as [number, number]);
+      this.puntos.set(latlngs);
+      this.draw();
+      this.fitBounds();
+    });
+
+    this.map.on((L as any).Draw.Event.EDITED, () => {
+      const layers = this.drawnItems.getLayers();
+      if (layers.length) {
+        const layer: any = layers[0];
+        const latlngs = layer.getLatLngs().map((p: any) => [Number(p.lat), Number(p.lng)] as [number, number]);
+        this.puntos.set(latlngs);
+        this.draw();
+      }
+    });
+
+    this.map.on((L as any).Draw.Event.DELETED, () => {
+      this.puntos.set([]);
       this.draw();
     });
   }
 
   private draw() {
     if (!this.layerGroup) return;
-    const L: any = (window as any).L;
     this.layerGroup.clearLayers();
     const pts = this.puntos();
     for (const p of pts) {
@@ -125,7 +165,23 @@ export class EditorRutaComponent implements OnInit, OnDestroy {
         nombre_ruta: this.form.controls.nombre_ruta.value,
         shape: { type: 'LineString', coordinates }
       };
-      await this.reco.crearRuta(body);
+      const id = this.route.snapshot.queryParamMap.get('id');
+      if (!id) {
+        // Nueva: crear en API y en Supabase
+        await this.reco.crearRuta(body);
+        await this.admin.createRuta({
+          nombre: String(this.form.controls.nombre_ruta.value || 'Ruta'),
+          geometria: { type: 'LineString', coordinates },
+          coordenadas: this.puntos()
+        });
+      } else {
+        // Edición: actualizar en Supabase
+        await this.admin.updateRuta(id, {
+          nombre: String(this.form.controls.nombre_ruta.value || 'Ruta'),
+          geometria: { type: 'LineString', coordinates },
+          coordenadas: this.puntos()
+        });
+      }
       this.success.set('Ruta guardada');
       setTimeout(() => this.router.navigateByUrl('/admin/rutas'), 800);
     } catch (e: any) {

@@ -1,13 +1,13 @@
-.rutas-page { padding: 1rem; }
-.actions { margin: .5rem 0 1rem; }
-.union-form .grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+.rutas-page { padding: 16px; }
+.actions { margin: 8px 0 16px; }
+.union-form .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
 .union-form .grid .full { grid-column: 1 / -1; }
-.buttons { margin-top: .5rem; }
-.msg { margin-top: .5rem; font-size: .9rem; }
+.buttons { margin-top: 8px; }
+.msg { margin-top: 8px; font-size: .95rem; }
 .msg.error { color: #b91c1c; }
 .msg.ok { color: #065f46; }
-.list .item { margin-bottom: .5rem; }
-.row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: .5rem; }
-.title { font-weight: 600; }
-.subtitle { opacity: .8; font-size: .85rem; }
-.empty { opacity: .7; padding: .75rem 0; }
+.list .item { margin-bottom: 10px; border: 1px solid #e5e7eb; border-radius: 12px; }
+.row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; padding: 10px 12px; }
+.title { font-weight: 700; }
+.subtitle { opacity: .8; font-size: .9rem; }
+.empty { opacity: .7; padding: 12px 0; }

@@ -1,4 +1,4 @@
-<div class="dashboard">
+<div class="dashboard" [class.dark]="theme() === 'dark'">
   <header class="header">
     <div class="header-content">
       <h1 class="logo">EcoRutas</h1>
@@ -7,14 +7,23 @@
           <span class="role-badge" [attr.data-role]="role()">{{ role() | titlecase }}</span>
         }
         <span class="user-name">{{ userName() }}</span>
+        <button class="btn-theme" (click)="toggleTheme()" [attr.aria-label]="theme() === 'dark' ? 'Cambiar a claro' : 'Cambiar a oscuro'">
+          @if (theme() === 'dark') { 🌙 } @else { ☀️ }
+        </button>
         <button class="btn-logout" (click)="logout()">Salir</button>
       </div>
     </div>
   </header>
 
   <main class="main">
+    <div class="hero-anim" aria-hidden="true"></div>
+    <div class="status-bar">
+      <span class="pulse-dot"></span>
+      <span>En vivo en Buenaventura</span>
+      <a routerLink="/mapa" class="status-link">Ir al mapa →</a>
+    </div>
     <div class="welcome">
-      <h2 class="title">¡Hola, {{ userName() }}!</h2>
+      <h2 class="title">{{ greeting() }}, {{ userName() }}!</h2>
       <p class="subtitle">Bienvenido a tu panel de control de recolección</p>
     </div>
 
@@ -24,11 +33,13 @@
       <div class="error-box">{{ error() }}</div>
     } @else {
       <div class="cards">
-        <a routerLink="/mapa" class="card card-primary card-clickable">
+        <a routerLink="/mapa" class="card card-primary card-clickable card-live">
+          <div class="live-badge"><span class="dot"></span> En vivo</div>
           <div class="card-icon">🗺️</div>
           <div class="card-body">
             <h3 class="card-title">Mapa en vivo</h3>
             <p class="card-text">Ver rutas y vehículos en tiempo real</p>
+            <div class="mini-map"><canvas #miniMap></canvas></div>
             <div class="card-action">Ir al mapa →</div>
           </div>
         </a>
@@ -39,6 +50,7 @@
             <h3 class="card-title">Vehículos activos</h3>
             <p class="card-number">{{ vehiculosCount() }}</p>
             <p class="card-text">En operación</p>
+            <div class="sparkline"><canvas #vehChart></canvas></div>
           </div>
         </div>
 
@@ -48,6 +60,7 @@
             <h3 class="card-title">Rutas disponibles</h3>
             <p class="card-number">{{ rutasCount() }}</p>
             <p class="card-text">En Buenaventura</p>
+            <div class="sparkline"><canvas #rutasChart></canvas></div>
           </div>
         </div>
 
@@ -75,7 +88,7 @@
           @if (role() === 'admin') {
             <a routerLink="/admin" class="quick-link">
               <span class="link-icon">🛠️</span>
-              <span class="link-text">Admin</span>
+              <span class="link-text">Panel administrativo</span>
             </a>
           }
           <a routerLink="/auth/login" class="quick-link">

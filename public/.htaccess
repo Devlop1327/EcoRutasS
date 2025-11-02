@@ -1,0 +1,11 @@
+# SPA rewrite for Angular app under /jhon_site/
+# If you deploy at a different subpath, move this file to that directory.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # This .htaccess must live alongside index.html in the deployed folder
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  # Use relative rewrite to index.html so it works in subfolders
+  RewriteRule . index.html [L]
+</IfModule>

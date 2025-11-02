@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { createClient, SupabaseClient, User, type AuthError } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
 import { signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 
 type SignInCredentials = {
   email: string;
@@ -24,6 +25,7 @@ type AuthResponse = {
 export class AuthService {
   private supabase: SupabaseClient;
   private router = inject(Router);
+  private document = inject(DOCUMENT);
   
   // Estado de autenticación
   currentUser = signal<User | null>(null);
@@ -119,10 +121,14 @@ export class AuthService {
       this.isLoading.set(true);
       this.error.set(null);
       
+      const baseHref = this.document?.baseURI || window.location.origin + '/';
+      const basePath = new URL(baseHref).pathname.replace(/\/$/, '');
+      const redirectTo = `${window.location.origin}${basePath}/auth/callback`;
+
       const { error } = await this.supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -149,6 +155,10 @@ export class AuthService {
       this.isLoading.set(true);
       this.error.set(null);
       
+      const baseHref = this.document?.baseURI || window.location.origin + '/';
+      const basePath = new URL(baseHref).pathname.replace(/\/$/, '');
+      const emailRedirectTo = `${window.location.origin}${basePath}/auth/callback`;
+
       const { data, error } = await this.supabase.auth.signUp({
         email: credentials.email,
         password: credentials.password,
@@ -157,7 +167,7 @@ export class AuthService {
             username: credentials.username,
             avatar_url: ''
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`
+          emailRedirectTo
         }
       });
 
@@ -224,8 +234,12 @@ export class AuthService {
 
   async resetPassword(email: string): Promise<{ error?: Error }> {
     try {
+      const baseHref = this.document?.baseURI || window.location.origin + '/';
+      const basePath = new URL(baseHref).pathname.replace(/\/$/, '');
+      const redirectTo = `${window.location.origin}${basePath}/reset-password`;
+
       const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo,
       });
 
       if (error) throw error;

@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { RecoleccionService } from '../../core/services/recoleccion.service';
+import { AdminDataService } from '../../core/services/admin-data.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
@@ -27,7 +27,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 })
 export class VehiculosComponent implements OnInit {
   private fb = inject(FormBuilder);
-  private reco = inject(RecoleccionService);
+  private admin = inject(AdminDataService);
 
   loading = signal(false);
   listLoading = signal(false);
@@ -38,9 +38,10 @@ export class VehiculosComponent implements OnInit {
 
   form = this.fb.nonNullable.group({
     placa: ['', [Validators.required]],
-    marca: ['', [Validators.required]],
-    modelo: ['', [Validators.required]],
-    activo: [true, []]
+    ruta_id: [''],
+    lat: [null as unknown as number | null],
+    lng: [null as unknown as number | null],
+    activo: [true]
   });
 
   async ngOnInit() {
@@ -51,7 +52,7 @@ export class VehiculosComponent implements OnInit {
     this.listLoading.set(true);
     this.error.set(null);
     try {
-      const data = await this.reco.getVehiculos();
+      const data = await this.admin.listVehiculos();
       this.vehiculos.set(data);
     } catch (e: any) {
       this.error.set('No se pudieron cargar los vehículos');
@@ -62,25 +63,28 @@ export class VehiculosComponent implements OnInit {
 
   newVehiculo() {
     this.editingId.set(null);
-    this.form.reset({ placa: '', marca: '', modelo: '', activo: true });
+    this.form.reset({ placa: '', ruta_id: '', lat: null, lng: null, activo: true });
   }
 
   editVehiculo(v: any) {
     this.editingId.set(v.id);
     this.form.reset({
       placa: v.placa || '',
-      marca: v.marca || '',
-      modelo: v.modelo || '',
+      ruta_id: v.ruta_id || '',
+      lat: v.lat ?? null,
+      lng: v.lng ?? null,
       activo: v.activo !== false
     });
   }
 
   async deleteVehiculo(id: string) {
     if (!id || this.loading()) return;
+    const ok = window.confirm('¿Eliminar este vehículo?');
+    if (!ok) return;
     this.loading.set(true);
     this.error.set(null);
     try {
-      await this.reco.deleteVehiculo(id);
+      await this.admin.deleteVehiculo(id);
       this.success.set('Vehículo eliminado');
       await this.loadVehiculos();
       this.newVehiculo();
@@ -99,10 +103,10 @@ export class VehiculosComponent implements OnInit {
     try {
       const value = this.form.getRawValue();
       if (this.editingId()) {
-        await this.reco.updateVehiculo(this.editingId()!, value);
+        await this.admin.updateVehiculo(this.editingId()!, value);
         this.success.set('Vehículo actualizado');
       } else {
-        await this.reco.crearVehiculo(value);
+        await this.admin.createVehiculo(value);
         this.success.set('Vehículo creado');
       }
       await this.loadVehiculos();
