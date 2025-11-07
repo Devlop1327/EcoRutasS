@@ -7,10 +7,19 @@
   justify-content: center;
   min-height: 100vh;
   padding: 1.5rem;
-  background: linear-gradient(145deg, #1b5e20 0%, #2e7d32 40%, #e8f5e9 100%);
-  background-attachment: fixed;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: transparent;
+}
+
+/* Overlay del logo como fondo (igual a login) */
+.login-container::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url('../../../assets/Coe.jpg') center/cover no-repeat;
+  filter: blur(12px);
+  opacity: .18;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .auth-shell {
@@ -19,6 +28,8 @@
   max-width: 1000px;
   width: 100%;
   gap: 2rem;
+  position: relative;
+  z-index: 1; /* por encima del overlay */
 }
 
 .form-panel { display: flex; align-items: center; justify-content: center; }
@@ -29,19 +40,26 @@
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 18px 50px rgba(0,0,0,.25);
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
+  position: relative;
+  z-index: 1;
 }
 
 .login-card mat-card-header {
   background: linear-gradient(145deg, #1b5e20, #2e7d32);
-  color: #fff;
+  color: #ffffff;
   padding: 1.5rem;
 }
 
 .login-card mat-card-content {
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(255, 255, 255, 0.96);
   padding: 2rem;
 }
+
+/* Texto en contenido blanco en negro para contraste */
+.login-card mat-card-content,
+.login-card mat-card-content * { color: #0f172a; }
 
 .eco-avatar {
   background: rgba(255,255,255,.2);
@@ -61,11 +79,7 @@
 }
 
 .visual-panel {
-  display: flex; align-items: center; justify-content: center;
-  background: radial-gradient(1200px 600px at 80% -20%, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 60%),
-              linear-gradient(135deg, #2e7d32, #0f3d18);
-  border-radius: 16px;
-  box-shadow: 0 16px 40px rgba(0,0,0,.28);
+  display: none;
 }
 
 .visual-content { text-align: center; padding: 32px; color: #e8f5e9; }
@@ -82,7 +96,25 @@ button[mat-raised-button]{height:48px;border-radius:10px;text-transform:uppercas
 button[mat-raised-button]:not(:disabled){background:#2e7d32;color:#fff}
 button[mat-raised-button]:hover:not(:disabled){background:#1b5e20;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
 
+/* Placeholders más visibles */
+input.mat-mdc-input-element::placeholder,
+textarea.mat-mdc-input-element::placeholder {
+  color: #14532d;
+  opacity: 0.9;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
 @media (max-width: 900px){
   .auth-shell{grid-template-columns:1fr}
   .visual-panel{display:none}
 }
+
+/* Forzar label y asterisco en negro, y texto del input en negro */
+:host ::ng-deep .mdc-floating-label { color: #0f172a !important; opacity: 1 !important; }
+:host ::ng-deep .mat-mdc-form-field-required-marker { color: #0f172a !important; opacity: 1 !important; }
+input.mat-mdc-input-element, textarea.mat-mdc-input-element { color: #0f172a; }
+
+/* Mensajes de error y enlace en negro */
+mat-error { color: #000000 !important; opacity: 1; font-weight: 600; }
+.actions a[mat-button] { color: #000000 !important; font-weight: 600; }

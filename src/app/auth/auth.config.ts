@@ -10,10 +10,6 @@ export const AUTH_ROUTES: Routes = [
     loadComponent: () => import('./callback/auth-callback.component').then(m => m.AuthCallbackComponent)
   },
   {
-    path: 'register',
-    loadComponent: () => import('./register/register.component').then(m => m.RegisterComponent)
-  },
-  {
     path: 'forgot',
     loadComponent: () => import('./forgot/forgot.component').then(m => m.ForgotComponent)
   },

@@ -1,92 +1,194 @@
-<div class="login-container">
+  <div class="login-container">
   <div class="auth-shell">
     <div class="form-panel">
-      <mat-card class="login-card">
+      <mat-card class="login-card" [@fadeSlideInOut]>
         <mat-card-header>
           <div mat-card-avatar class="eco-avatar">
             <mat-icon class="material-symbols-rounded">recycling</mat-icon>
           </div>
-          <mat-card-title>Iniciar Sesión</mat-card-title>
-          <mat-card-subtitle>Recicla y Valora tu ciudad</mat-card-subtitle>
+          <div class="header-content">
+            <mat-card-title>EcoRutas</mat-card-title>
+            <mat-card-subtitle>Recicla y valora tu ciudad</mat-card-subtitle>
+          </div>
         </mat-card-header>
+
         <mat-card-content>
-          <form [formGroup]="form" (ngSubmit)="onSubmit()">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Email</mat-label>
-              <mat-icon matPrefix class="material-symbols-rounded">alternate_email</mat-icon>
-              <input matInput type="email" formControlName="email">
-              @if (form.controls.email.errors?.['required'] && form.controls.email.touched) {
-                <mat-error>El email es requerido</mat-error>
+          <div class="login-grid">
+            <aside class="promo-box">
+              <div class="promo-inner">
+                <img class="promo-logo" src="/assets/eco-icon.png" alt="EcoRutas" />
+                <h3>Bienvenido</h3>
+                <p>Ingresa para rastrear el carro de la basura en tiempo real y sacar tus residuos a tiempo.</p>
+              </div>
+            </aside>
+            <section class="form-box">
+              <div class="mode-switch" role="tablist" aria-label="Cambiar modo">
+                <button type="button" class="mode-btn" [class.active]="mode() === 'login'" (click)="switchMode('login')" role="tab" [attr.aria-selected]="mode() === 'login'">
+                  <mat-icon class="material-symbols-rounded">login</mat-icon>
+                  <span>Iniciar sesión</span>
+                </button>
+                <button type="button" class="mode-btn" [class.active]="mode() === 'register'" (click)="switchMode('register')" role="tab" [attr.aria-selected]="mode() === 'register'">
+                  <mat-icon class="material-symbols-rounded">person_add</mat-icon>
+                  <span>Crear cuenta</span>
+                </button>
+              </div>
+
+              @if (mode() === 'login') {
+                <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" autocomplete="on">
+                  <mat-form-field appearance="fill" class="full-width">
+                    <mat-label>Email</mat-label>
+                    <mat-icon matPrefix class="material-symbols-rounded">alternate_email</mat-icon>
+                    <input matInput type="email" formControlName="email" autocomplete="email" aria-label="Correo electrónico" title="Correo electrónico" />
+                    @if (loginForm.controls.email.errors?.['required'] && loginForm.controls.email.touched) {
+                      <mat-error>El email es requerido</mat-error>
+                    }
+                    @if (loginForm.controls.email.errors?.['email'] && loginForm.controls.email.touched) {
+                      <mat-error>Ingresa un email válido</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field appearance="fill" class="full-width">
+                    <mat-label>Contraseña</mat-label>
+                    <mat-icon matPrefix class="material-symbols-rounded">lock</mat-icon>
+                    <input matInput [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="current-password" aria-label="Contraseña" title="Contraseña" />
+                    <button
+                      mat-icon-button
+                      matSuffix
+                      type="button"
+                      (click)="togglePassword()"
+                      [attr.aria-label]="'Mostrar contraseña'"
+                      [attr.aria-pressed]="showPassword()"
+                      class="password-toggle"
+                    >
+                      <mat-icon class="material-symbols-rounded">{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                    </button>
+                    @if (loginForm.controls.password.errors?.['required'] && loginForm.controls.password.touched) {
+                      <mat-error>La contraseña es requerida</mat-error>
+                    }
+                    @if (loginForm.controls.password.errors?.['minlength'] && loginForm.controls.password.touched) {
+                      <mat-error>Mínimo 6 caracteres</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <div class="actions actions--inline">
+                    <mat-checkbox color="primary" formControlName="remember">Recuérdame</mat-checkbox>
+                    <a mat-button color="primary" routerLink="/auth/forgot">¿Olvidaste tu contraseña?</a>
+                  </div>
+
+                  <div class="actions">
+                    <button mat-raised-button color="primary" type="submit" [disabled]="loading()">
+                      @if (loading()) { <mat-spinner diameter="20"></mat-spinner> }
+                      @else {
+                        <ng-container>
+                          <mat-icon class="material-symbols-rounded btn-leading">login</mat-icon>
+                          <span>Iniciar sesión</span>
+                        </ng-container>
+                      }
+                    </button>
+                  </div>
+                </form>
+              } @else {
+                <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" autocomplete="on">
+                  <mat-form-field appearance="fill" class="full-width">
+                    <mat-label>Nombre de usuario</mat-label>
+                    <mat-icon matPrefix class="material-symbols-rounded">badge</mat-icon>
+                    <input matInput type="text" formControlName="username" autocomplete="username" aria-label="Nombre de usuario" title="Nombre de usuario" />
+                    @if (registerForm.controls.username.errors?.['required'] && registerForm.controls.username.touched) {
+                      <mat-error>El nombre de usuario es requerido</mat-error>
+                    }
+                    @if (registerForm.controls.username.errors?.['minlength'] && registerForm.controls.username.touched) {
+                      <mat-error>Mínimo 3 caracteres</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field appearance="fill" class="full-width">
+                    <mat-label>Email</mat-label>
+                    <mat-icon matPrefix class="material-symbols-rounded">alternate_email</mat-icon>
+                    <input matInput type="email" formControlName="email" autocomplete="email" />
+                    @if (registerForm.controls.email.errors?.['required'] && registerForm.controls.email.touched) {
+                      <mat-error>El email es requerido</mat-error>
+                    }
+                    @if (registerForm.controls.email.errors?.['email'] && registerForm.controls.email.touched) {
+                      <mat-error>Ingresa un email válido</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field appearance="fill" class="full-width">
+                    <mat-label>Contraseña</mat-label>
+                    <mat-icon matPrefix class="material-symbols-rounded">lock</mat-icon>
+                    <input matInput [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="new-password" aria-label="Contraseña" title="Contraseña" />
+                    <button
+                      mat-icon-button
+                      matSuffix
+                      type="button"
+                      (click)="togglePassword()"
+                      [attr.aria-label]="'Mostrar contraseña'"
+                      [attr.aria-pressed]="showPassword()"
+                      class="password-toggle"
+                    >
+                      <mat-icon class="material-symbols-rounded">{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                    </button>
+                    @if (registerForm.controls.password.errors?.['required'] && registerForm.controls.password.touched) {
+                      <mat-error>La contraseña es requerida</mat-error>
+                    }
+                    @if (registerForm.controls.password.errors?.['minlength'] && registerForm.controls.password.touched) {
+                      <mat-error>Mínimo 6 caracteres</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <div class="strength">
+                    <div
+                      class="strength-fill"
+                      [style.width.%]="passwordStrength()"
+                      [class.weak]="passwordStrength() < 40"
+                      [class.medium]="passwordStrength() >= 40 && passwordStrength() < 70"
+                      [class.strong]="passwordStrength() >= 70"
+                    ></div>
+                    <span class="strength-text">
+                      @if (passwordStrength() < 40) { Débil }
+                      @else if (passwordStrength() < 70) { Media }
+                      @else { Fuerte }
+                    </span>
+                  </div>
+
+                  <mat-form-field appearance="fill" class="full-width">
+                    <mat-label>Rol</mat-label>
+                    <mat-icon matPrefix class="material-symbols-rounded">group</mat-icon>
+                    <mat-select formControlName="role">
+                      @for (r of roleOptions; track r) {
+                        <mat-option [value]="r">{{ r | titlecase }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+
+                  <div class="actions">
+                    <button mat-raised-button color="primary" type="submit" [disabled]="loading()">
+                      @if (loading()) { <mat-spinner diameter="20"></mat-spinner> }
+                      @else {
+                        <ng-container>
+                          <mat-icon class="material-symbols-rounded btn-leading">person_add</mat-icon>
+                          <span>Crear cuenta</span>
+                        </ng-container>
+                      }
+                    </button>
+                  </div>
+                </form>
               }
-              @if (form.controls.email.errors?.['email'] && form.controls.email.touched) {
-                <mat-error>Ingresa un email válido</mat-error>
-              }
-            </mat-form-field>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Contraseña</mat-label>
-              <mat-icon matPrefix class="material-symbols-rounded">lock</mat-icon>
-              <input matInput [type]="showPassword() ? 'text' : 'password'" formControlName="password">
-              <button 
-                mat-icon-button 
-                matSuffix 
-                type="button"
-                (click)="togglePassword()"
-                [attr.aria-label]="'Mostrar contraseña'"
-                [attr.aria-pressed]="showPassword()"
-                class="password-toggle"
-              >
-                <mat-icon class="material-symbols-rounded">{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
-              </button>
-              @if (form.controls.password.errors?.['required'] && form.controls.password.touched) {
-                <mat-error>La contraseña es requerida</mat-error>
-              }
-              @if (form.controls.password.errors?.['minlength'] && form.controls.password.touched) {
-                <mat-error>Mínimo 6 caracteres</mat-error>
-              }
-            </mat-form-field>
+              <div class="divider"><span>o</span></div>
 
-            <div class="actions actions--inline">
-              <mat-checkbox color="primary" formControlName="remember">Recuérdame</mat-checkbox>
-              <a mat-button color="primary" routerLink="/auth/forgot">¿Olvidaste tu contraseña?</a>
-            </div>
-
-            <div class="actions">
-              <button 
-                mat-raised-button 
-                color="primary" 
-                type="submit"
-                [disabled]="loading()"
-              >
-                @if (loading()) {
-                  <mat-spinner diameter="20"></mat-spinner>
-                } @else {
-                  <ng-container>
-                    <mat-icon class="material-symbols-rounded btn-leading">login</mat-icon>
-                    <span>Iniciar Sesión</span>
-                  </ng-container>
-                }
-              </button>
-              
-              <a mat-button routerLink="/auth/register" class="register-link">
-                ¿No tienes cuenta? Regístrate
-              </a>
-            </div>
-
-            <div class="divider"><span>o</span></div>
-
-            <div class="actions">
-              <button mat-stroked-button color="primary" type="button" (click)="signInWithGoogle()" [disabled]="loading()" class="btn-google">
-                <span class="g-icon" aria-hidden="true">
-                  <!-- simple Google 'G' mark -->
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M21.35 11.1H12v2.9h5.35A5.9 5.9 0 0 1 6.1 15.9a5.9 5.9 0 0 1 0-7.8 5.9 5.9 0 0 1 9.9 2.4l2.74-1.6A9 9 0 1 0 12 21a9 9 0 0 0 9.35-9.9Z" fill="#4285F4"/>
-                  </svg>
-                </span>
-                <span>Continuar con Google</span>
-              </button>
-            </div>
-          </form>
+              <div class="actions">
+                <button mat-stroked-button color="primary" type="button" (click)="signInWithGoogle()" [disabled]="loading()" class="btn-google">
+                  <span class="g-icon" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M21.35 11.1H12v2.9h5.35A5.9 5.9 0 0 1 6.1 15.9a5.9 5.9 0 0 1 0-7.8 5.9 5.9 0 0 1 9.9 2.4l2.74-1.6A9 9 0 1 0 12 21a9 9 0 0 0 9.35-9.9Z" fill="#4285F4"/>
+                    </svg>
+                  </span>
+                  <span>Continuar con Google</span>
+                </button>
+              </div>
+            </section>
+          </div>
         </mat-card-content>
       </mat-card>
     </div>
@@ -99,3 +201,4 @@
     </div>
   </div>
 </div>
+

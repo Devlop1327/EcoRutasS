@@ -63,11 +63,18 @@ export class RecoleccionService {
   }
 
   async getVehiculos(): Promise<Vehiculo[]> {
-    const json = await firstValueFrom(this.http.get<any>(`${this.base}/vehiculos`, { withCredentials: false }));
+    const perfil = environment.profileId;
+    const json = await firstValueFrom(this.http.get<any>(`${this.base}/vehiculos`, {
+      withCredentials: false,
+      params: { perfil_id: String(perfil) }
+    }));
     const data = json?.data ?? json;
     return (data || []).map((v: any) => ({
       id: String(v.id ?? v.ext_id ?? v.codigo ?? ''),
       placa: v.placa ?? v.plate ?? undefined,
+      marca: v.marca ?? v.brand ?? undefined,
+      modelo: v.modelo ?? v.model ?? undefined,
+      activo: v.activo ?? v.active ?? true,
       rutaId: v.ruta_id ?? v.route_ext_id ?? undefined,
       lat: v.lat ?? v.latitude ?? v.latitud ?? undefined,
       lng: v.lng ?? v.longitude ?? v.longitud ?? undefined,
@@ -105,7 +112,11 @@ export class RecoleccionService {
   }
 
   async getVehiculoById(id: string): Promise<any> {
-    return await firstValueFrom(this.http.get(`${this.base}/vehiculos/${id}`, { withCredentials: false }));
+    const perfil = environment.profileId;
+    return await firstValueFrom(this.http.get(`${this.base}/vehiculos/${id}` , {
+      withCredentials: false,
+      params: { perfil_id: String(perfil) }
+    }));
   }
 
   async updateVehiculo(id: string, payload: { placa?: string; marca?: string; modelo?: string; activo?: boolean }): Promise<any> {
@@ -113,7 +124,10 @@ export class RecoleccionService {
   }
 
   async deleteVehiculo(id: string): Promise<any> {
-    return await firstValueFrom(this.http.delete(`${this.base}/vehiculos/${id}`));
+    const perfil = environment.profileId;
+    return await firstValueFrom(this.http.delete(`${this.base}/vehiculos/${id}`, {
+      params: { perfil_id: String(perfil) }
+    }));
   }
 
   async listarPosiciones(recorrido_id: string): Promise<any[]> {

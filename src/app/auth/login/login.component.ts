@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -12,6 +12,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router, RouterLink } from '@angular/router';
 import { animate, style, transition, trigger, state } from '@angular/animations';
 import { AuthService } from '../../core/services/auth.service';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-login',
@@ -27,7 +28,8 @@ import { AuthService } from '../../core/services/auth.service';
     MatCheckboxModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
-    RouterLink
+    RouterLink,
+    MatSelectModule
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
@@ -45,11 +47,30 @@ export class LoginComponent {
   showPassword = signal(false);
   loading = signal(false);
   error = signal<string | null>(null);
+  mode = signal<'login' | 'register'>('login');
 
-  form = this.fb.nonNullable.group({
+  roleOptions = ['cliente', 'conductor'];
+  passwordStrength = computed(() => {
+    const v = this.registerForm.controls.password.value || '';
+    let score = 0;
+    if (v.length >= 6) score += 25;
+    if (/[A-Z]/.test(v)) score += 25;
+    if (/[0-9]/.test(v)) score += 25;
+    if (/[^A-Za-z0-9]/.test(v)) score += 25;
+    return score;
+  });
+
+  loginForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     remember: [true]
+  });
+
+  registerForm = this.fb.nonNullable.group({
+    username: ['', [Validators.required, Validators.minLength(3)]],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
+    role: ['cliente', [Validators.required]]
   });
 
   togglePassword() {
@@ -57,35 +78,56 @@ export class LoginComponent {
   }
 
   async onSubmit() {
-    if (this.loading() || this.form.invalid) return;
-    
-    this.loading.set(true);
-    try {
-      const { email, password } = this.form.getRawValue();
-      await this.authService.signIn({ email, password });
-      
-      this.snackBar.open('¡Bienvenido!', 'Cerrar', {
-        duration: 3000,
-        horizontalPosition: 'right',
-        verticalPosition: 'top',
-        panelClass: ['success-snackbar']
-      });
-      
-      // AuthService ya navega a /dashboard
-    } catch (error: any) {
-      console.error('Error al iniciar sesión:', error);
-      this.snackBar.open(
-        error.message || 'Error al iniciar sesión. Verifica tus credenciales.',
-        'Cerrar',
-        {
+    if (this.loading()) return;
+    if (this.mode() === 'login') {
+      if (this.loginForm.invalid) return;
+      this.loading.set(true);
+      try {
+        const { email, password } = this.loginForm.getRawValue();
+        await this.authService.signIn({ email, password });
+        this.snackBar.open('¡Bienvenido!', 'Cerrar', {
+          duration: 3000,
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+          panelClass: ['success-snackbar']
+        });
+      } catch (error: any) {
+        this.snackBar.open(
+          error?.message || 'Error al iniciar sesión. Verifica tus credenciales.',
+          'Cerrar',
+          { duration: 5000, horizontalPosition: 'right', verticalPosition: 'top', panelClass: ['error-snackbar'] }
+        );
+      } finally {
+        this.loading.set(false);
+      }
+    } else {
+      if (this.registerForm.invalid) return;
+      this.loading.set(true);
+      try {
+        const { username, email, password, role } = this.registerForm.getRawValue();
+        const res = await this.authService.signUp({ username, email, password });
+        if (res.error) throw res.error;
+        if (res.user?.id && role) {
+          await this.authService.upsertProfileRole(res.user.id, role);
+        }
+        this.snackBar.open('Cuenta creada. Revisa tu correo para verificar.', 'Cerrar', {
+          duration: 4000,
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+          panelClass: ['success-snackbar']
+        });
+        await this.router.navigate(['/auth/login']);
+        this.mode.set('login');
+      } catch (error: any) {
+        this.snackBar.open(error?.message || 'No se pudo registrar', 'Cerrar', {
           duration: 5000,
           horizontalPosition: 'right',
           verticalPosition: 'top',
           panelClass: ['error-snackbar']
-        }
-      );
-    } finally {
-      this.loading.set(false);
+        });
+      } finally {
+        this.loading.set(false);
+      }
     }
   }
 
@@ -93,7 +135,7 @@ export class LoginComponent {
     if (this.loading()) return;
     
     this.loading.set(true);
-    this.snackBar.dismiss(); // Cerrar cualquier snackbar abierto
+    this.snackBar.dismiss();
 
     const { error } = await this.authService.signInWithGoogle();
 
@@ -125,6 +167,10 @@ export class LoginComponent {
       verticalPosition: 'top',
       panelClass: ['success-snackbar']
     });
+  }
+
+  switchMode(next: 'login' | 'register') {
+    this.mode.set(next);
   }
 }
 
