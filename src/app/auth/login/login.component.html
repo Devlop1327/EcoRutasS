@@ -16,7 +16,13 @@
           <div class="login-grid">
             <aside class="promo-box">
               <div class="promo-inner">
-                <img class="promo-logo" src="/assets/eco-icon.png" alt="EcoRutas" />
+                <div class="carousel-container">
+                  <img 
+                    [src]="'/assets/carousel/carousel-' + currentImageIndex() + '.jpg'" 
+                    alt="Carousel image"
+                    class="carousel-image"
+                  />
+                </div>
                 <h3>Bienvenido</h3>
                 <p>Ingresa para rastrear el carro de la basura en tiempo real y sacar tus residuos a tiempo.</p>
               </div>

@@ -1,4 +1,4 @@
-import { Component, signal, inject, computed } from '@angular/core';
+import { Component, signal, inject, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -38,7 +38,7 @@ import { MatSelectModule } from '@angular/material/select';
     class: 'app-login'
   }
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
@@ -50,6 +50,10 @@ export class LoginComponent {
   mode = signal<'login' | 'register'>('login');
 
   roleOptions = ['cliente', 'conductor'];
+  
+  currentImageIndex = signal(1);
+  private carouselInterval: any;
+
   passwordStrength = computed(() => {
     const v = this.registerForm.controls.password.value || '';
     let score = 0;
@@ -73,6 +77,27 @@ export class LoginComponent {
     role: ['cliente', [Validators.required]]
   });
 
+  ngOnInit() {
+    this.startCarousel();
+  }
+
+  ngOnDestroy() {
+    this.stopCarousel();
+  }
+
+  private startCarousel() {
+    this.carouselInterval = setInterval(() => {
+      const nextIndex = this.currentImageIndex() === 5 ? 1 : this.currentImageIndex() + 1;
+      this.currentImageIndex.set(nextIndex);
+    }, 5000);
+  }
+
+  private stopCarousel() {
+    if (this.carouselInterval) {
+      clearInterval(this.carouselInterval);
+    }
+  }
+
   togglePassword() {
     this.showPassword.update(show => !show);
   }
@@ -85,7 +110,7 @@ export class LoginComponent {
       try {
         const { email, password } = this.loginForm.getRawValue();
         await this.authService.signIn({ email, password });
-        this.snackBar.open('¡Bienvenido!', 'Cerrar', {
+        this.snackBar.open('Â¡Bienvenido!', 'Cerrar', {
           duration: 3000,
           horizontalPosition: 'center',
           verticalPosition: 'top',
@@ -93,7 +118,7 @@ export class LoginComponent {
         });
       } catch (error: any) {
         this.snackBar.open(
-          error?.message || 'Error al iniciar sesión. Verifica tus credenciales.',
+          error?.message || 'Error al iniciar sesiÃ³n. Verifica tus credenciales.',
           'Cerrar',
           { duration: 5000, horizontalPosition: 'center', verticalPosition: 'top', panelClass: ['error-snackbar'] }
         );
@@ -141,7 +166,7 @@ export class LoginComponent {
 
     if (error) {
       console.error('Error al iniciar con Google:', error);
-      this.showError(error.message || 'Error al iniciar sesión con Google');
+      this.showError(error.message || 'Error al iniciar sesiÃ³n con Google');
       this.loading.set(false);
       return;
     }

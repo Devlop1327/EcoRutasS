@@ -505,6 +505,21 @@ textarea.mat-mdc-input-element::placeholder {
   color: #5b6f76;
 }
 
+.carousel-container {
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 /* Media queries para responsividad */
 @media (max-width: 900px) {
   .auth-shell {
