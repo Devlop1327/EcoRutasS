@@ -87,7 +87,7 @@ export class LoginComponent {
         await this.authService.signIn({ email, password });
         this.snackBar.open('¡Bienvenido!', 'Cerrar', {
           duration: 3000,
-          horizontalPosition: 'right',
+          horizontalPosition: 'center',
           verticalPosition: 'top',
           panelClass: ['success-snackbar']
         });
@@ -95,7 +95,7 @@ export class LoginComponent {
         this.snackBar.open(
           error?.message || 'Error al iniciar sesión. Verifica tus credenciales.',
           'Cerrar',
-          { duration: 5000, horizontalPosition: 'right', verticalPosition: 'top', panelClass: ['error-snackbar'] }
+          { duration: 5000, horizontalPosition: 'center', verticalPosition: 'top', panelClass: ['error-snackbar'] }
         );
       } finally {
         this.loading.set(false);
@@ -112,7 +112,7 @@ export class LoginComponent {
         }
         this.snackBar.open('Cuenta creada. Revisa tu correo para verificar.', 'Cerrar', {
           duration: 4000,
-          horizontalPosition: 'right',
+          horizontalPosition: 'center',
           verticalPosition: 'top',
           panelClass: ['success-snackbar']
         });
@@ -121,7 +121,7 @@ export class LoginComponent {
       } catch (error: any) {
         this.snackBar.open(error?.message || 'No se pudo registrar', 'Cerrar', {
           duration: 5000,
-          horizontalPosition: 'right',
+          horizontalPosition: 'center',
           verticalPosition: 'top',
           panelClass: ['error-snackbar']
         });
@@ -145,25 +145,21 @@ export class LoginComponent {
       this.loading.set(false);
       return;
     }
-    // En éxito, Supabase redirige a /auth/callback automáticamente.
-    // Mantenemos el loading hasta que el navegador redirija.
   }
 
-  // Método para manejar errores de formulario
   private showError(message: string) {
     this.snackBar.open(message, 'Cerrar', {
       duration: 5000,
-      horizontalPosition: 'right',
+      horizontalPosition: 'center',
       verticalPosition: 'top',
       panelClass: ['error-snackbar']
     });
   }
 
-  // Método para manejar éxito en operaciones
   private showSuccess(message: string) {
     this.snackBar.open(message, 'Cerrar', {
       duration: 3000,
-      horizontalPosition: 'right',
+      horizontalPosition: 'center',
       verticalPosition: 'top',
       panelClass: ['success-snackbar']
     });
@@ -173,7 +169,3 @@ export class LoginComponent {
     this.mode.set(next);
   }
 }
-
-
-
-
