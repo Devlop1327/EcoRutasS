@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RecoleccionService } from '../core/services/recoleccion.service';
-import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
 import { ApiService, type UUID } from '../services/api.service';
 import { ConductorOnlyDirective } from '../core/directives/conductor-only.directive';
@@ -9,12 +8,16 @@ import { environment } from '../../environments/environment';
 import { AdminDataService } from '../core/services/admin-data.service';
 
 // Coordenadas aproximadas de Buenaventura, Colombia
-const BV_COORDS: [number, number] = [3.882, -77.031];
+const BV_COORDS: [number, number] = [3.8833, -77.0283];
+const BV_BOUNDS: [[number, number], [number, number]] = [
+  [3.84, -77.08],
+  [3.92, -76.98]
+];
 
 @Component({
   selector: 'app-mapa',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule, ConductorOnlyDirective],
+  imports: [CommonModule, RouterModule, ConductorOnlyDirective],
   templateUrl: './mapa.component.html',
   styleUrls: ['./mapa.component.scss']
 })
@@ -175,12 +178,27 @@ export class MapaComponent implements OnInit, OnDestroy {
 
     this.map = L.map('map', {
       center: BV_COORDS,
-      zoom: 13,
-      zoomControl: true
+      zoom: 14,
+      minZoom: 13,
+      maxZoom: 18,
+      zoomControl: true,
+      dragging: true,
+      scrollWheelZoom: 'center',
+      doubleClickZoom: true,
+      boxZoom: true,
+      keyboard: true,
+      touchZoom: true,
+      maxBounds: BV_BOUNDS,
+      maxBoundsViscosity: 0.8
     });
+
+    try {
+      this.map.setView(BV_COORDS, 14, { animate: false });
+    } catch {}
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
+      minZoom: 13,
       attribution: '&copy; OpenStreetMap'
     }).addTo(this.map);
 
