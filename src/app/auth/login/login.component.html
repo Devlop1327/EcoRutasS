@@ -3,12 +3,14 @@
     <div class="form-panel">
       <mat-card class="login-card" [@fadeSlideInOut]>
         <mat-card-header>
-          <div mat-card-avatar class="eco-avatar">
-            <mat-icon class="material-symbols-rounded">recycling</mat-icon>
-          </div>
-          <div class="header-content">
-            <mat-card-title>EcoRutas</mat-card-title>
-            <mat-card-subtitle>Recicla y valora tu ciudad</mat-card-subtitle>
+          <div class="header-content header-content--center">
+            <div class="eco-avatar small">
+              <img src="/assets/eco.jpg" alt="EcoRutas" class="eco-avatar-img" />
+            </div>
+            <div class="header-text">
+              <mat-card-title>EcoRutas</mat-card-title>
+              <mat-card-subtitle>Recicla y valora tu ciudad</mat-card-subtitle>
+            </div>
           </div>
         </mat-card-header>
 
@@ -16,7 +18,10 @@
           <div class="login-grid">
             <aside class="promo-box">
               <div class="promo-inner">
-                <img class="promo-logo" src="/assets/eco-icon.png" alt="EcoRutas" />
+                <span class="logo-text">EcoRutas</span>
+                <div class="promo-logo-wrap">
+                  <img class="promo-logo" src="/assets/eco.jpg" alt="EcoRutas" />
+                </div>
                 <h3>Bienvenido</h3>
                 <p>Ingresa para rastrear el carro de la basura en tiempo real y sacar tus residuos a tiempo.</p>
               </div>
