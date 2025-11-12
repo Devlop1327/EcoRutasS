@@ -1,7 +1,7 @@
 <div class="map-layout">
   <aside class="side">
     <a class="back-btn" routerLink="/dashboard" aria-label="Volver al dashboard" title="Volver">
-      <span class="icon" aria-hidden="true">←</span>
+      <mat-icon class="material-symbols-rounded">arrow_back</mat-icon>
     </a>
     <h2 class="title">Rutas disponibles</h2>
     @if (loading()) {
@@ -9,41 +9,39 @@
     } @else if (error()) {
       <div class="error">{{ error() }}</div>
     } @else {
-      @if (rutas().length > 0) {
-        <ul class="list">
-          @for (r of rutas(); track r.id) {
-            <li class="item"
-                [class.selected]="selectedRutaId() === r.id"
-                (click)="selectRuta(r.id)"
-                title="Seleccionar ruta">
-              {{ r.nombre }}
-            </li>
-          }
-        </ul>
-      } @else {
-        <div class="muted">Sin rutas</div>
-      }
+      <ul class="list">
+        @for (r of rutas(); track r.id) {
+          <li class="item"
+              [class.selected]="selectedRutaId() === r.id"
+              (click)="selectRuta(r.id)"
+              title="Seleccionar ruta">
+            {{ r.nombre }}
+          </li>
+        }
+        @if (rutas().length === 0) {
+          <li class="muted">Sin rutas</li>
+        }
+      </ul>
     }
 
     <h2 class="title mt">Vehículos</h2>
     @if (loading()) {
       <div class="muted">Cargando...</div>
     } @else {
-      @if (vehiculos().length > 0) {
-        <ul class="list">
-          @for (v of vehiculos(); track v.id) {
-            <li class="item vehicle"
-                [class.selected]="selectedVehiculoId() === v.id"
-                (click)="selectVehiculo(v.id)"
-                title="Seleccionar vehículo">
-              <span class="icon">🚛</span>
-              {{ v.placa || v.id }}
-            </li>
-          }
-        </ul>
-      } @else {
-        <div class="muted">Sin vehículos</div>
-      }
+      <ul class="list">
+        @for (v of vehiculos(); track v.id) {
+          <li class="item vehicle"
+              [class.selected]="selectedVehiculoId() === v.id"
+              (click)="selectVehiculo(v.id)"
+              title="Seleccionar vehículo">
+            <span class="icon">🚛</span>
+            {{ v.placa || v.id }}
+          </li>
+        }
+        @if (vehiculos().length === 0) {
+          <li class="muted">Sin vehículos</li>
+        }
+      </ul>
     }
 
     <!-- Controles de conductor -->

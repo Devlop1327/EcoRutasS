@@ -10,11 +10,8 @@ type SignInCredentials = {
   password: string;
 };
 
-type UserRole = 'cliente' | 'conductor' | 'admin';
-
 type SignUpCredentials = SignInCredentials & {
   username: string;
-  role: UserRole;
 };
 
 type AuthResponse = {
@@ -168,8 +165,7 @@ export class AuthService {
         options: {
           data: {
             username: credentials.username,
-            avatar_url: '',
-            role: credentials.role
+            avatar_url: ''
           },
           emailRedirectTo
         }

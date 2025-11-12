@@ -13,9 +13,9 @@
 .map{height:100%;min-height:500px}
 
 .back-btn{display:inline-flex;align-items:center;justify-content:center;background:#111827;color:#fff;border-radius:999px;width:36px;height:36px;text-decoration:none;font-size:18px;border:1px solid #19338a;box-shadow:0 4px 10px rgba(0,0,0,.25);transition:background .15s ease, transform .1s ease;cursor:pointer;margin-bottom:12px}
-.back-btn .icon{font-size:18px;color:#60a5fa;line-height:1}
+.back-btn mat-icon{font-size:22px;color:#60a5fa;line-height:1}
 .back-btn:hover{background:#1f2937}
-.back-btn:hover .icon{color:#93c5fd}
+.back-btn:hover mat-icon{color:#93c5fd}
 .back-btn:active{transform:scale(.98)}
 .back-btn:focus-visible{outline:3px solid #60a5fa;outline-offset:2px}
 

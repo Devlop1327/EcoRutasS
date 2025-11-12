@@ -1,9 +1,18 @@
 import { Component, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router, RouterLink } from '@angular/router';
 import { animate, style, transition, trigger, state } from '@angular/animations';
 import { AuthService } from '../../core/services/auth.service';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-login',
@@ -11,7 +20,16 @@ import { AuthService } from '../../core/services/auth.service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCheckboxModule,
+    MatProgressSpinnerModule,
+    MatSnackBarModule,
+    RouterLink,
+    MatSelectModule
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
@@ -23,6 +41,7 @@ import { AuthService } from '../../core/services/auth.service';
 export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
   private fb = inject(FormBuilder);
 
   showPassword = signal(false);
@@ -66,9 +85,18 @@ export class LoginComponent {
       try {
         const { email, password } = this.loginForm.getRawValue();
         await this.authService.signIn({ email, password });
-        this.error.set(null);
+        this.snackBar.open('¡Bienvenido!', 'Cerrar', {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['success-snackbar']
+        });
       } catch (error: any) {
-        this.error.set(error?.message || 'Error al iniciar sesión. Verifica tus credenciales.');
+        this.snackBar.open(
+          error?.message || 'Error al iniciar sesión. Verifica tus credenciales.',
+          'Cerrar',
+          { duration: 5000, horizontalPosition: 'center', verticalPosition: 'top', panelClass: ['error-snackbar'] }
+        );
       } finally {
         this.loading.set(false);
       }
@@ -77,14 +105,26 @@ export class LoginComponent {
       this.loading.set(true);
       try {
         const { username, email, password, role } = this.registerForm.getRawValue();
-        const roleVal = (role ?? 'cliente') as 'cliente' | 'conductor' | 'admin';
-        const res = await this.authService.signUp({ username, email, password, role: roleVal });
+        const res = await this.authService.signUp({ username, email, password });
         if (res.error) throw res.error;
-        this.error.set(null);
+        if (res.user?.id && role) {
+          await this.authService.upsertProfileRole(res.user.id, role);
+        }
+        this.snackBar.open('Cuenta creada. Revisa tu correo para verificar.', 'Cerrar', {
+          duration: 4000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['success-snackbar']
+        });
         await this.router.navigate(['/auth/login']);
         this.mode.set('login');
       } catch (error: any) {
-        this.error.set(error?.message || 'No se pudo registrar');
+        this.snackBar.open(error?.message || 'No se pudo registrar', 'Cerrar', {
+          duration: 5000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        });
       } finally {
         this.loading.set(false);
       }
@@ -95,24 +135,37 @@ export class LoginComponent {
     if (this.loading()) return;
     
     this.loading.set(true);
+    this.snackBar.dismiss();
 
     const { error } = await this.authService.signInWithGoogle();
 
     if (error) {
       console.error('Error al iniciar con Google:', error);
-      this.error.set(error.message || 'Error al iniciar sesión con Google');
+      this.showError(error.message || 'Error al iniciar sesión con Google');
       this.loading.set(false);
       return;
     }
-    // En éxito, Supabase redirige a /auth/callback automáticamente.
-    // Mantenemos el loading hasta que el navegador redirija.
+  }
+
+  private showError(message: string) {
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 5000,
+      horizontalPosition: 'center',
+      verticalPosition: 'top',
+      panelClass: ['error-snackbar']
+    });
+  }
+
+  private showSuccess(message: string) {
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'top',
+      panelClass: ['success-snackbar']
+    });
   }
 
   switchMode(next: 'login' | 'register') {
     this.mode.set(next);
   }
 }
-
-
-
-
