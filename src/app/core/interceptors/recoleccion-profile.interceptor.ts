@@ -29,19 +29,29 @@ export const recoleccionProfileInterceptor: HttpInterceptorFn = (req, next) => {
 
     const PERFIL_ID = environment.profileId || '3d9cdfd5-f6cb-4d85-b18c-5dd3a2043b75';
 
-    // Normaliza: la API exige 'perfil_id'. Quitamos 'profile_id' si vino y no duplicamos.
-    if (reqUrl.searchParams.has('profile_id') && !reqUrl.searchParams.has('perfil_id')) {
-      const prev = reqUrl.searchParams.get('profile_id') || PERFIL_ID;
-      reqUrl.searchParams.delete('profile_id');
-      reqUrl.searchParams.set('perfil_id', prev);
+    // Trabajar con HttpParams para evitar duplicados
+    let params = req.params;
+    const hasPerfilId = params.has('perfil_id');
+    const hasProfileId = params.has('profile_id');
+
+    let perfilValue = PERFIL_ID;
+    if (hasPerfilId) {
+      perfilValue = params.get('perfil_id') || PERFIL_ID;
+    } else if (hasProfileId) {
+      perfilValue = params.get('profile_id') || PERFIL_ID;
     }
-    if (!reqUrl.searchParams.has('perfil_id')) {
-      reqUrl.searchParams.set('perfil_id', PERFIL_ID);
+
+    // Normaliza: usar sólo 'perfil_id'
+    if (hasProfileId) {
+      params = params.delete('profile_id');
+    }
+    if (!hasPerfilId) {
+      params = params.set('perfil_id', perfilValue);
     }
 
     const cloned = req.clone({
-      url: reqUrl.toString(),
-      setHeaders: { 'x-perfil-id': PERFIL_ID, 'Accept': 'application/json' }
+      params,
+      setHeaders: { 'x-perfil-id': perfilValue, 'Accept': 'application/json' }
     });
     return next(cloned);
   } catch {

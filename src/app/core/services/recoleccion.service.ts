@@ -21,8 +21,12 @@ type Vehiculo = {
 @Injectable({ providedIn: 'root' })
 export class RecoleccionService {
   private http = inject(HttpClient);
-  // En desarrollo usamos proxy para evitar CORS. Si no existe, cae al dominio directo.
-  private base = (environment.recoleccionApiProxy || environment.recoleccionApiUrl) + '/api';
+  // En desarrollo (localhost) usamos proxy para evitar CORS; en otros hosts usamos URL absoluta
+  private base = ((
+    typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ) && environment.recoleccionApiProxy
+    ? environment.recoleccionApiProxy
+    : environment.recoleccionApiUrl) + '/api';
 
   async getRutas(): Promise<Ruta[]> {
     const json = await firstValueFrom(this.http.get<any>(`${this.base}/rutas`, { withCredentials: false }));
