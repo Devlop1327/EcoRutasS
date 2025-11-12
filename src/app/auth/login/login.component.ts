@@ -105,11 +105,8 @@ export class LoginComponent {
       this.loading.set(true);
       try {
         const { username, email, password, role } = this.registerForm.getRawValue();
-        const res = await this.authService.signUp({ username, email, password });
+        const res = await this.authService.signUp({ username, email, password, role });
         if (res.error) throw res.error;
-        if (res.user?.id && role) {
-          await this.authService.upsertProfileRole(res.user.id, role);
-        }
         this.snackBar.open('Cuenta creada. Revisa tu correo para verificar.', 'Cerrar', {
           duration: 4000,
           horizontalPosition: 'center',

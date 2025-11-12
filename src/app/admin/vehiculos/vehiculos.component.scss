@@ -1,15 +1,63 @@
-.vehiculos-page { padding: 16px; }
-.form-section { margin-bottom: 20px; }
-.form-grid { display: grid; grid-template-columns: repeat(4, minmax(200px, 1fr)); gap: 16px; align-items: end; }
-.actions { display: flex; gap: 8px; margin-top: 8px; }
-.msg { margin-top: 8px; font-size: 0.95rem; }
-.msg.error { color: #b91c1c; }
-.msg.ok { color: #065f46; }
-.list .item { margin-bottom: 10px; border: 1px solid #e5e7eb; border-radius: 12px; }
-.row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; padding: 10px 12px; }
-.title { font-weight: 700; font-size: 1rem; }
-.subtitle { opacity: .8; font-size: .9rem; }
-.col.actions { display: flex; gap: 6px; justify-content: flex-end; }
+.vehiculos-page { padding: 24px; }
+.page-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 16px; }
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+
+.form-section { margin-bottom: 24px; }
+.form-grid { display: grid; grid-template-columns: repeat(4, minmax(220px, 1fr)); gap: 14px; align-items: end; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.label { color: #374151; font-weight: 600; font-size: .9rem; }
+.input {
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+  transition: box-shadow .2s, border-color .2s;
+}
+.input:focus { border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96,165,250,.25); }
+
+.switch { display: inline-flex; align-items: center; gap: 10px; }
+.switch input { display: none; }
+.slider { width: 44px; height: 24px; background: #e5e7eb; border-radius: 999px; position: relative; transition: background .2s; }
+.slider::after { content: ''; width: 18px; height: 18px; background: #fff; border-radius: 50%; position: absolute; top: 3px; left: 3px; box-shadow: 0 1px 2px rgba(0,0,0,.2); transition: transform .2s; }
+.switch input:checked + .slider { background: #10b981; }
+.switch input:checked + .slider::after { transform: translateX(20px); }
+.switch-label { font-weight: 600; color: #374151; }
+
+.actions { display: flex; gap: 10px; margin-top: 12px; }
+.btn { appearance: none; border: 0; border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; transition: transform .05s, box-shadow .2s, background .2s, color .2s; }
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+.btn-primary { background: #10b981; color: #fff; box-shadow: 0 2px 6px rgba(16,185,129,.3); }
+.btn-primary:hover { background: #0ea371; }
+.btn-ghost { background: transparent; color: #111827; border: 1px solid #e5e7eb; }
+.btn-ghost:hover { background: #f9fafb; }
+
+.section-title { font-weight: 700; margin-bottom: 8px; }
+.list { display: flex; flex-direction: column; gap: 10px; }
+.item-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; }
+.item-title { font-weight: 800; }
+.item-sub { color: #6b7280; }
+.item-status { color: #10b981; font-weight: 700; }
+.item-actions { display: flex; gap: 8px; }
+.icon-btn { background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 10px; padding: 8px 10px; cursor: pointer; }
+.icon-btn:hover { background: #e5e7eb; }
+.icon-btn.danger { color: #b91c1c; border-color: #fecaca; background: #fff1f2; }
 .empty { opacity: .7; padding: 12px 0; }
-@media (max-width: 1000px) { .form-grid { grid-template-columns: repeat(2, minmax(200px, 1fr)); } }
-@media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .row { grid-template-columns: 1fr auto; } }
+
+@media (max-width: 1100px) { .form-grid { grid-template-columns: repeat(2, minmax(220px, 1fr)); } }
+@media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } .item-row { grid-template-columns: 1fr auto; } }
+
+/* Collapsible sections */
+.collapsible{border:0;padding:0;margin:0}
+.collapsible summary{list-style:none;display:flex;align-items:center;gap:8px;padding:10px 6px;margin-bottom:8px;border-radius:10px;cursor:pointer;user-select:none}
+.collapsible summary::-webkit-details-marker{display:none}
+.collapsible .count{margin-left:auto;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;padding:2px 8px;font-size:.8rem;color:#374151}
+.collapsible .caret{color:#9ca3af;transition:transform .12s}
+.collapsible[open] .caret{transform:rotate(180deg)}

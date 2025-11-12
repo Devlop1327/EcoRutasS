@@ -3,11 +3,6 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RecoleccionService } from '../../core/services/recoleccion.service';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatCardModule } from '@angular/material/card';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import { AdminDataService } from '../../core/services/admin-data.service';
@@ -17,12 +12,7 @@ import { AdminDataService } from '../../core/services/admin-data.service';
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
-    MatButtonModule,
-    MatIconModule,
-    MatCardModule,
-    MatInputModule,
-    MatFormFieldModule
+    ReactiveFormsModule
   ],
   templateUrl: './editor-ruta.component.html',
   styleUrls: ['./editor-ruta.component.scss']
@@ -78,7 +68,15 @@ export class EditorRutaComponent implements OnInit, OnDestroy {
   }
 
   private initMap() {
-    this.map = L.map('editor-map', { center: [3.8801, -77.0283], zoom: 13 });
+    const BV_COORDS: [number, number] = [3.882, -77.031];
+    const BV_BOUNDS: [[number, number], [number, number]] = [[3.70, -77.25], [4.05, -76.85]];
+    this.map = L.map('editor-map', {
+      center: BV_COORDS,
+      zoom: 13,
+      minZoom: 11,
+      maxBounds: BV_BOUNDS as any,
+      maxBoundsViscosity: 1.0
+    });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(this.map);
     this.layerGroup = L.layerGroup().addTo(this.map);
     this.drawnItems = new L.FeatureGroup();
@@ -96,6 +94,7 @@ export class EditorRutaComponent implements OnInit, OnDestroy {
       edit: { featureGroup: this.drawnItems, remove: true }
     });
     this.map.addControl(drawControl);
+    try { this.map.fitBounds(BV_BOUNDS as any, { padding: [24, 24] } as any); } catch {}
 
     this.map.on((L as any).Draw.Event.CREATED, (e: any) => {
       this.drawnItems.clearLayers();

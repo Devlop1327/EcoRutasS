@@ -1,8 +1,85 @@
-.editor-ruta-page { padding: 1rem; }
-.name-form { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
-.map-wrap { margin-top: 1rem; position: relative; }
-#editor-map { height: 60vh; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,.08); }
-.hint { opacity: .75; font-size: .9rem; margin-top: .5rem; }
-.msg { margin-top: .5rem; font-size: .9rem; }
-.msg.error { color: #b91c1c; }
-.msg.ok { color: #065f46; }
+.editor-ruta-page { padding: 24px; }
+.header { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+.page-title { font-size: 1.6rem; font-weight: 700; }
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+
+.name-form { display: grid; grid-template-columns: 1fr auto auto auto; gap: 12px; align-items: end; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.label { color: #374151; font-weight: 600; font-size: .9rem; }
+.input { border: 1px solid #d1d5db; border-radius: 10px; padding: 10px 12px; outline: none; transition: box-shadow .2s, border-color .2s; }
+.input:focus { border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96,165,250,.25); }
+
+.actions { display: flex; gap: 10px; }
+.btn { appearance: none; border: 0; border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; transition: transform .05s, box-shadow .2s, background .2s, color .2s; }
+.btn-primary { background: #2563eb; color: #fff; box-shadow: 0 2px 6px rgba(37,99,235,.3); }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-ghost { background: transparent; color: #111827; border: 1px solid #e5e7eb; }
+.btn-ghost:hover { background: #f9fafb; }
+.btn-ghost.danger { color: #b91c1c; border-color: #fecaca; background: #fff1f2; }
+
+.alert { margin-top: 8px; font-size: .95rem; }
+.alert.error { color: #b91c1c; }
+.alert.ok { color: #065f46; }
+
+.map-wrap { margin-top: 16px; position: relative; }
+#editor-map { height: 60vh; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+.hint { opacity: .75; font-size: .9rem; margin-top: 8px; }
+
+@media (max-width: 900px) {
+  .name-form { grid-template-columns: 1fr; }
+}
+
+/* Leaflet controls modern look */
+.leaflet-top .leaflet-control { margin-top: 10px; }
+.leaflet-control-zoom a,
+.leaflet-draw-toolbar a {
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+  width: 36px;
+  height: 36px;
+  line-height: 34px;
+  text-align: center;
+  border-radius: 10px !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,.12);
+  transition: background .15s, transform .05s, border-color .15s;
+}
+.leaflet-control-zoom a:hover,
+.leaflet-draw-toolbar a:hover { background: #f3f4f6; }
+.leaflet-control-zoom a:active,
+.leaflet-draw-toolbar a:active { transform: translateY(1px); }
+.leaflet-draw-toolbar { border: none !important; }
+.leaflet-draw-toolbar a { background-position: center; }
+
+/* Primary accent for draw-create (polyline) */
+.leaflet-draw-toolbar a.leaflet-draw-draw-polyline { border-color: #60a5fa; }
+.leaflet-draw-toolbar a.leaflet-draw-draw-polyline:hover { background: #eff6ff; }
+
+/* Edit/remove accents */
+.leaflet-draw-toolbar a.leaflet-draw-edit-edit { border-color: #10b981; }
+.leaflet-draw-toolbar a.leaflet-draw-edit-edit:hover { background: #ecfdf5; }
+.leaflet-draw-toolbar a.leaflet-draw-edit-remove { border-color: #fca5a5; }
+.leaflet-draw-toolbar a.leaflet-draw-edit-remove:hover { background: #fef2f2; }
+
+/* Actions toolbar (Save/Cancel) */
+.leaflet-draw-actions { border: none; box-shadow: 0 2px 6px rgba(0,0,0,.12); overflow: hidden; border-radius: 10px; }
+.leaflet-draw-actions li a {
+  background: #111827;
+  color: #fff;
+  padding: 8px 12px;
+  border: none;
+}
+.leaflet-draw-actions li a:hover { background: #1f2937; }
+.leaflet-draw-actions li a[title*="Cancel"],
+.leaflet-draw-actions li a[title*="cancel"],
+.leaflet-draw-actions li a[title*="Cancelar"] {
+  background: #6b7280;
+}
+.leaflet-draw-actions li a[title*="Cancelar"]:hover { background: #4b5563; }

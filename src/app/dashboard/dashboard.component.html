@@ -27,6 +27,18 @@
       <p class="subtitle">Bienvenido a tu panel de control de recolección</p>
     </div>
 
+    <!-- Circular stats for Admin/overview -->
+    <div class="round-cards">
+      <div class="round-card round-veh">
+        <div class="circle"><span class="value">{{ vehiculosCount() }}</span></div>
+        <div class="label">Vehículos</div>
+      </div>
+      <div class="round-card round-rut">
+        <div class="circle"><span class="value">{{ rutasCount() }}</span></div>
+        <div class="label">Rutas</div>
+      </div>
+    </div>
+
     @if (loading()) {
       <div class="loading">Cargando datos...</div>
     } @else if (error()) {

@@ -1,60 +1,68 @@
 <div class="rutas-page">
-  <h2>Rutas</h2>
+  <h2 class="page-title">Rutas</h2>
 
   <section class="actions">
-    <button mat-raised-button color="primary" routerLink="/admin/rutas/editor">
-      <mat-icon class="material-symbols-rounded">map</mat-icon>
-      Crear desde mapa
-    </button>
+    <a class="btn btn-primary" routerLink="/admin/rutas/editor">🗺️ Crear desde mapa</a>
   </section>
 
   <section class="union-form">
-    <h3>Crear por unión de calles</h3>
-    <form [formGroup]="unionForm" (ngSubmit)="crearPorUnion()">
-      <div class="grid">
-        <mat-form-field appearance="outline">
-          <mat-label>Nombre de la ruta</mat-label>
-          <input matInput formControlName="nombre_ruta">
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="full">
-          <mat-label>Calles IDs (separadas por coma o salto de línea)</mat-label>
-          <textarea matInput rows="4" formControlName="calles_ids"></textarea>
-        </mat-form-field>
-      </div>
-      <div class="buttons">
-        <button mat-raised-button color="primary" type="submit" [disabled]="loading() || unionForm.invalid">
-          @if (loading()) { Creando... } @else { Crear }
-        </button>
-      </div>
-    </form>
-    @if (error()) { <div class="msg error">{{ error() }}</div> }
-    @if (success()) { <div class="msg ok">{{ success() }}</div> }
+    <details class="collapsible" open>
+      <summary>
+        <span class="section-title">Crear por unión de calles</span>
+        <span class="caret" aria-hidden>▾</span>
+      </summary>
+      <form class="card" [formGroup]="unionForm" (ngSubmit)="crearPorUnion()">
+        <div class="grid">
+          <label class="field">
+            <span class="label">Nombre de la ruta</span>
+            <input class="input" type="text" formControlName="nombre_ruta" placeholder="Ruta 1">
+          </label>
+          <label class="field full">
+            <span class="label">Calles IDs (separadas por coma o salto de línea)</span>
+            <textarea class="input" rows="4" formControlName="calles_ids" placeholder="c1, c2, c3"></textarea>
+          </label>
+        </div>
+        <div class="buttons">
+          <button class="btn btn-primary" type="submit" [disabled]="loading() || unionForm.invalid">
+            @if (loading()) { Creando... } @else { Crear }
+          </button>
+        </div>
+      </form>
+      @if (error()) { <div class="alert error">{{ error() }}</div> }
+      @if (success()) { <div class="alert ok">{{ success() }}</div> }
+    </details>
   </section>
 
   <section class="listado">
-    <h3>Listado</h3>
-    @if (listLoading()) {
-      <div class="loading">Cargando...</div>
-    } @else {
-      <div class="list">
-        @for (r of rutas(); track r.id) {
-          <mat-card class="item">
-            <div class="row">
-              <div class="col">
-                <div class="title">{{ r.nombre }}</div>
-                <div class="subtitle">Actualizada: {{ r.updated_at || '—' }}</div>
-              </div>
-              <div class="col small">
-                <a mat-button [routerLink]="['/admin/rutas/editor']" [queryParams]="{ id: r.id }">Editar</a>
-                <button mat-button color="warn" (click)="eliminar(r.id)" [disabled]="loading()">Eliminar</button>
+    <details class="collapsible" open>
+      <summary>
+        <span class="section-title">Listado</span>
+        <span class="count">{{ rutas().length }}</span>
+        <span class="caret" aria-hidden>▾</span>
+      </summary>
+      @if (listLoading()) {
+        <div class="loading">Cargando...</div>
+      } @else {
+        <div class="list">
+          @for (r of rutas(); track r.id) {
+            <div class="item card">
+              <div class="row">
+                <div class="col">
+                  <div class="title">{{ r.nombre }}</div>
+                  <div class="subtitle">Actualizada: {{ r.updated_at || '—' }}</div>
+                </div>
+                <div class="col small actions">
+                  <a class="btn btn-ghost" [routerLink]="['/admin/rutas/editor']" [queryParams]="{ id: r.id }">Editar</a>
+                  <button class="btn btn-ghost danger" (click)="eliminar(r.id)" [disabled]="loading()">Eliminar</button>
+                </div>
               </div>
             </div>
-          </mat-card>
-        }
-        @if (rutas().length === 0) {
-          <div class="empty">Sin rutas</div>
-        }
-      </div>
-    }
+          }
+          @if (rutas().length === 0) {
+            <div class="empty">Sin rutas</div>
+          }
+        </div>
+      }
+    </details>
   </section>
 </div>

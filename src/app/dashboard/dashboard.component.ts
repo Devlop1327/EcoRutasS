@@ -58,8 +58,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     try {
       const [rutas, vehiculos] = await Promise.all([
-        this.admin.listRutas().catch(() => []),
-        this.admin.listVehiculos().catch(() => [])
+        this.reco.getRutas().catch(() => []),
+        this.reco.getVehiculos().catch(() => [])
       ]);
       this.rutasCount.set(rutas.length);
       this.vehiculosCount.set(vehiculos.length);
@@ -77,8 +77,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.pollId = window.setInterval(async () => {
         try {
           const [rutas, vehiculos] = await Promise.all([
-            this.admin.listRutas().catch(() => []),
-            this.admin.listVehiculos().catch(() => [])
+            this.reco.getRutas().catch(() => []),
+            this.reco.getVehiculos().catch(() => [])
           ]);
           const rc = rutas.length; const vc = vehiculos.length;
           this.rutasCount.set(rc); this.vehiculosCount.set(vc);

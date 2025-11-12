@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { environment } from '../../../environments/environment';
+import { Injectable, inject } from '@angular/core';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseService } from './supabase.service';
 
 export type Vehiculo = {
   id?: string;
@@ -33,9 +33,8 @@ export class AdminDataService {
   private supabase: SupabaseClient;
 
   constructor() {
-    const supaUrl = (environment as any).supabase?.url ?? (environment as any).supabaseUrl;
-    const supaKey = (environment as any).supabase?.key ?? (environment as any).supabaseKey;
-    this.supabase = createClient(supaUrl, supaKey, { auth: { persistSession: true } });
+    const supa = inject(SupabaseService);
+    this.supabase = supa.client;
   }
 
   // Vehículos

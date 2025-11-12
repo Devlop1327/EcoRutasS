@@ -4,11 +4,15 @@
 .title.mt{margin-top:20px}
 .muted{color:#6b7280;font-size:0.9rem}
 .error{color:#b91c1c;font-size:0.9rem}
+.card{border:1px solid #e5e7eb;border-radius:12px;padding:8px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04)}
 .list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
-.item{padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;font-size:0.9rem}
+.item{padding:8px 10px;border-radius:10px;border:1px solid #e5e7eb;font-size:0.95rem;display:flex;align-items:center;gap:8px;justify-content:space-between}
 .item:hover{background:#f9fafb;cursor:pointer}
-.item.vehicle{display:flex;align-items:center;gap:6px}
-.icon{font-size:1.2rem}
+.item.vehicle{display:flex;align-items:center;gap:8px}
+.icon{font-size:1rem}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;background:#10b981;box-shadow:0 0 0 2px rgba(16,185,129,.15)}
+.text{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 6px}
+.chev{color:#9ca3af}
 .map-wrap{flex:1;position:relative}
 .map{height:100%;min-height:500px}
 
@@ -38,3 +42,31 @@
 
 .btn-danger{background:#dc2626;border-color:#b91c1c}
 .btn-danger:hover{background:#ef4444}
+
+/* Modern Leaflet controls (mapa) */
+.leaflet-top .leaflet-control{margin-top:10px}
+.leaflet-control-zoom a,
+.leaflet-draw-toolbar a{background:#fff;color:#111827;border:1px solid #e5e7eb;width:36px;height:36px;line-height:34px;text-align:center;border-radius:10px!important;box-shadow:0 2px 6px rgba(0,0,0,.12);transition:background .15s,transform .05s,border-color .15s}
+.leaflet-control-zoom a:hover,
+.leaflet-draw-toolbar a:hover{background:#f3f4f6}
+.leaflet-control-zoom a:active,
+.leaflet-draw-toolbar a:active{transform:translateY(1px)}
+.leaflet-draw-toolbar{border:none!important}
+.leaflet-draw-toolbar a{background-position:center}
+.leaflet-draw-toolbar a.leaflet-draw-draw-polyline{border-color:#60a5fa}
+.leaflet-draw-toolbar a.leaflet-draw-draw-polyline:hover{background:#eff6ff}
+.leaflet-draw-toolbar a.leaflet-draw-edit-edit{border-color:#10b981}
+.leaflet-draw-toolbar a.leaflet-draw-edit-edit:hover{background:#ecfdf5}
+.leaflet-draw-toolbar a.leaflet-draw-edit-remove{border-color:#fca5a5}
+.leaflet-draw-toolbar a.leaflet-draw-edit-remove:hover{background:#fef2f2}
+.leaflet-draw-actions{border:none;box-shadow:0 2px 6px rgba(0,0,0,.12);overflow:hidden;border-radius:10px}
+.leaflet-draw-actions li a{background:#111827;color:#fff;padding:8px 12px;border:none}
+.leaflet-draw-actions li a:hover{background:#1f2937}
+
+/* Collapsible sections */
+.collapsible{border:0;padding:0}
+.collapsible summary{list-style:none;display:flex;align-items:center;gap:8px;padding:8px 6px;margin:0;border-radius:8px;cursor:pointer;user-select:none}
+.collapsible summary::-webkit-details-marker{display:none}
+.collapsible .count{margin-left:auto;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;padding:2px 8px;font-size:.8rem;color:#374151}
+.collapsible .caret{color:#9ca3af}
+.collapsible[open] .caret{transform:rotate(180deg);transition:transform .12s}

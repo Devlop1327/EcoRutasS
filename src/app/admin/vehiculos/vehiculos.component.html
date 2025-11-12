@@ -1,63 +1,75 @@
 <div class="vehiculos-page">
-  <h2>Vehículos</h2>
+  <h2 class="page-title">Vehículos</h2>
 
   <section class="form-section">
-    <form [formGroup]="form" (ngSubmit)="save()">
-      <div class="form-grid">
-        <mat-form-field appearance="outline">
-          <mat-label>Placa</mat-label>
-          <input matInput formControlName="placa">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Marca</mat-label>
-          <input matInput formControlName="marca">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Modelo</mat-label>
-          <input matInput formControlName="modelo">
-        </mat-form-field>
-        <mat-slide-toggle formControlName="activo">Activo</mat-slide-toggle>
-      </div>
-      <div class="actions">
-        <button mat-raised-button color="primary" type="submit" [disabled]="loading() || form.invalid">
-          @if (loading()) { Guardando... } @else { Guardar }
-        </button>
-        <button mat-button type="button" (click)="newVehiculo()">Nuevo</button>
-      </div>
-    </form>
-    @if (error()) { <div class="msg error">{{ error() }}</div> }
-    @if (success()) { <div class="msg ok">{{ success() }}</div> }
+    <details class="collapsible" open>
+      <summary>
+        <span class="section-title">Formulario</span>
+        <span class="caret" aria-hidden>▾</span>
+      </summary>
+      <form class="card" [formGroup]="form" (ngSubmit)="save()">
+        <div class="form-grid">
+          <label class="field">
+            <span class="label">Placa</span>
+            <input class="input" type="text" formControlName="placa" placeholder="ABC123">
+          </label>
+          <label class="field">
+            <span class="label">Marca</span>
+            <input class="input" type="text" formControlName="marca" placeholder="Toyota">
+          </label>
+          <label class="field">
+            <span class="label">Modelo</span>
+            <input class="input" type="text" formControlName="modelo" placeholder="Hilux">
+          </label>
+          <label class="switch">
+            <input type="checkbox" formControlName="activo">
+            <span class="slider"></span>
+            <span class="switch-label">Activo</span>
+          </label>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" type="submit" [disabled]="loading() || form.invalid">
+            @if (loading()) { Guardando... } @else { Guardar }
+          </button>
+          <button class="btn btn-ghost" type="button" (click)="newVehiculo()">Nuevo</button>
+        </div>
+        @if (error()) { <div class="alert error">{{ error() }}</div> }
+        @if (success()) { <div class="alert ok">{{ success() }}</div> }
+      </form>
+    </details>
   </section>
 
   <section class="list-section">
-    <h3>Listado</h3>
-    @if (listLoading()) {
-      <div class="loading">Cargando...</div>
-    } @else {
-      <div class="list">
-        @for (v of vehiculos(); track v.id) {
-          <mat-card class="item">
-            <div class="row">
-              <div class="col">
-                <div class="title">{{ v.placa }}</div>
-                <div class="subtitle">Marca: {{ v.marca || '—' }} • Modelo: {{ v.modelo || '—' }}</div>
-              </div>
-              <div class="col small">{{ v.activo === false ? 'Inactivo' : 'Activo' }}</div>
-              <div class="col actions">
-                <button mat-icon-button color="primary" (click)="editVehiculo(v)">
-                  <mat-icon class="material-symbols-rounded">edit</mat-icon>
-                </button>
-                <button mat-icon-button color="warn" (click)="deleteVehiculo(v.id)">
-                  <mat-icon class="material-symbols-rounded">delete</mat-icon>
-                </button>
+    <details class="collapsible" open>
+      <summary>
+        <span class="section-title">Listado</span>
+        <span class="count">{{ vehiculos().length }}</span>
+        <span class="caret" aria-hidden>▾</span>
+      </summary>
+      @if (listLoading()) {
+        <div class="loading">Cargando...</div>
+      } @else {
+        <div class="list">
+          @for (v of vehiculos(); track v.id) {
+            <div class="item card">
+              <div class="item-row">
+                <div class="item-main">
+                  <div class="item-title">{{ v.placa }}</div>
+                  <div class="item-sub">Marca: {{ v.marca || '—' }} • Modelo: {{ v.modelo || '—' }}</div>
+                </div>
+                <div class="item-status">{{ v.activo === false ? 'Inactivo' : 'Activo' }}</div>
+                <div class="item-actions">
+                  <button class="icon-btn" title="Editar" (click)="editVehiculo(v)">✏️</button>
+                  <button class="icon-btn danger" title="Eliminar" (click)="deleteVehiculo(v.id)">🗑️</button>
+                </div>
               </div>
             </div>
-          </mat-card>
-        }
-        @if (vehiculos().length === 0) {
-          <div class="empty">Sin vehículos</div>
-        }
-      </div>
-    }
+          }
+          @if (vehiculos().length === 0) {
+            <div class="empty">Sin vehículos</div>
+          }
+        </div>
+      }
+    </details>
   </section>
 </div>

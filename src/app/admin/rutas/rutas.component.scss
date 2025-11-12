@@ -1,13 +1,38 @@
-.rutas-page { padding: 16px; }
+.rutas-page { padding: 24px; }
+.page-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 16px; }
 .actions { margin: 8px 0 16px; }
-.union-form .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+
+.union-form .grid { display: grid; grid-template-columns: repeat(2, minmax(260px, 1fr)); gap: 14px; }
 .union-form .grid .full { grid-column: 1 / -1; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.label { color: #374151; font-weight: 600; font-size: .9rem; }
+.input { border: 1px solid #d1d5db; border-radius: 10px; padding: 10px 12px; outline: none; transition: box-shadow .2s, border-color .2s; }
+.input:focus { border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96,165,250,.25); }
 .buttons { margin-top: 8px; }
-.msg { margin-top: 8px; font-size: .95rem; }
-.msg.error { color: #b91c1c; }
-.msg.ok { color: #065f46; }
+.btn { appearance: none; border: 0; border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; transition: transform .05s, box-shadow .2s, background .2s, color .2s; }
+.btn-primary { background: #2563eb; color: #fff; box-shadow: 0 2px 6px rgba(37,99,235,.3); }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-ghost { background: transparent; color: #111827; border: 1px solid #e5e7eb; }
+.btn-ghost:hover { background: #f9fafb; }
+.btn-ghost.danger { color: #b91c1c; border-color: #fecaca; background: #fff1f2; }
+.alert { margin-top: 8px; font-size: .95rem; }
+.alert.error { color: #b91c1c; }
+.alert.ok { color: #065f46; }
+
 .list .item { margin-bottom: 10px; border: 1px solid #e5e7eb; border-radius: 12px; }
 .row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; padding: 10px 12px; }
 .title { font-weight: 700; }
 .subtitle { opacity: .8; font-size: .9rem; }
 .empty { opacity: .7; padding: 12px 0; }
+
+@media (max-width: 900px) {
+  .union-form .grid { grid-template-columns: 1fr; }
+}

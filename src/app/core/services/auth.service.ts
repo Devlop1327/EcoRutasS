@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { createClient, SupabaseClient, User, type AuthError } from '@supabase/supabase-js';
-import { environment } from '../../../environments/environment';
+import { SupabaseClient, User, type AuthError } from '@supabase/supabase-js';
 import { signal } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
+import { SupabaseService } from './supabase.service';
 
 type SignInCredentials = {
   email: string;
@@ -12,6 +12,7 @@ type SignInCredentials = {
 
 type SignUpCredentials = SignInCredentials & {
   username: string;
+  role?: string;
 };
 
 type AuthResponse = {
@@ -34,24 +35,8 @@ export class AuthService {
   role = signal<'cliente' | 'conductor' | 'admin' | null>(null);
 
   constructor() {
-    const supaUrl = (environment as any).supabase?.url ?? (environment as any).supabaseUrl;
-    const supaKey = (environment as any).supabase?.key ?? (environment as any).supabaseKey;
-
-    if (!supaUrl || !supaKey) {
-      throw new Error('Missing Supabase configuration. Define environment.supabase.url/key or supabaseUrl/supabaseKey');
-    }
-
-    this.supabase = createClient(
-      supaUrl,
-      supaKey,
-      {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      }
-    );
+    const supa = inject(SupabaseService);
+    this.supabase = supa.client;
 
     // Verificar sesión al cargar
     this.checkAuth();
@@ -165,7 +150,8 @@ export class AuthService {
         options: {
           data: {
             username: credentials.username,
-            avatar_url: ''
+            avatar_url: '',
+            role: credentials.role ?? null
           },
           emailRedirectTo
         }

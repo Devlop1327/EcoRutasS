@@ -1,20 +1,23 @@
 <div class="editor-ruta-page">
-  <h2>Editor de Ruta</h2>
+  <div class="header">
+    <a class="btn btn-ghost" routerLink="/admin/rutas">← Volver</a>
+    <h2 class="page-title">Editor de Ruta</h2>
+  </div>
 
-  <section class="top-actions">
+  <section class="card">
     <form [formGroup]="form" (ngSubmit)="save()" class="name-form">
-      <mat-form-field appearance="outline">
-        <mat-label>Nombre de la ruta</mat-label>
-        <input matInput formControlName="nombre_ruta">
-      </mat-form-field>
-      <button mat-raised-button color="primary" type="submit" [disabled]="loading() || form.invalid || puntos().length < 2">
-        Guardar
-      </button>
-      <button mat-button type="button" (click)="undo()">Borrar último punto</button>
-      <button mat-button type="button" (click)="clearAll()">Limpiar</button>
+      <label class="field">
+        <span class="label">Nombre de la ruta</span>
+        <input class="input" formControlName="nombre_ruta" placeholder="Ruta Buenaventura" />
+      </label>
+      <div class="actions">
+        <button class="btn btn-primary" type="submit" [disabled]="loading() || form.invalid || puntos().length < 2">Guardar ruta</button>
+        <button class="btn btn-ghost" type="button" (click)="undo()">Borrar último punto</button>
+        <button class="btn btn-ghost danger" type="button" (click)="clearAll()">Limpiar</button>
+      </div>
     </form>
-    @if (error()) { <div class="msg error">{{ error() }}</div> }
-    @if (success()) { <div class="msg ok">{{ success() }}</div> }
+    @if (error()) { <div class="alert error">{{ error() }}</div> }
+    @if (success()) { <div class="alert ok">{{ success() }}</div> }
   </section>
 
   <section class="map-wrap">

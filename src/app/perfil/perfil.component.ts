@@ -60,7 +60,6 @@ export class PerfilComponent implements OnInit {
       const formData = this.form.getRawValue();
       
       // Aquí guardarías en Supabase tabla 'profiles' y 'user_addresses'
-      // Por ahora, simulamos guardado exitoso
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       this.message.set({ type: 'success', text: '✅ Perfil actualizado correctamente' });
