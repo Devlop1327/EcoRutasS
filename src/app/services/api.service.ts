@@ -53,8 +53,11 @@ export interface RecorridoFinalizarBody {
 function baseUrl(): string {
   const api = (environment as any).recoleccionApiUrl?.replace(/\/$/, '') || '';
   const proxy = (environment as any).recoleccionApiProxy || '/recoleccion';
-  // Usa proxy SOLO en desarrollo
-  if (!environment.production && proxy) return `${proxy}/api`;
+  // En producción usar siempre mismo origen: /api
+  if (environment.production) return `/api`;
+  // En desarrollo, si hay proxy configurado, úsalo
+  if (proxy) return `${proxy}/api`;
+  // Fallback: URL absoluta
   return `${api}/api`;
 }
 
