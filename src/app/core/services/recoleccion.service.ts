@@ -21,19 +21,12 @@ type Vehiculo = {
 @Injectable({ providedIn: 'root' })
 export class RecoleccionService {
   private http = inject(HttpClient);
-  // En producción usamos siempre mismo origen: /api
-  // En desarrollo, si hay proxy configurado, se usa; si no, URL absoluta
-  private base = (() => {
-    const api = (environment as any).recoleccionApiUrl?.replace(/\/$/, '') || '';
-    const proxy = (environment as any).recoleccionApiProxy || '/recoleccion';
-    const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-    // En hosts no locales usa siempre mismo origen: /api
-    if (!isLocal) return `/api`;
-    // En local (desarrollo), si hay proxy configurado, úsalo
-    if (proxy) return `${proxy}/api`;
-    // Fallback: URL absoluta
-    return `${api}/api`;
-  })();
+  // En desarrollo (localhost) usamos proxy para evitar CORS; en otros hosts usamos URL absoluta
+  private base = ((
+    typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ) && environment.recoleccionApiProxy
+    ? environment.recoleccionApiProxy
+    : environment.recoleccionApiUrl) + '/api';
 
   async getRutas(): Promise<Ruta[]> {
     const json = await firstValueFrom(this.http.get<any>(`${this.base}/rutas`, { withCredentials: false }));

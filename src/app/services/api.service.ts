@@ -53,12 +53,8 @@ export interface RecorridoFinalizarBody {
 function baseUrl(): string {
   const api = (environment as any).recoleccionApiUrl?.replace(/\/$/, '') || '';
   const proxy = (environment as any).recoleccionApiProxy || '/recoleccion';
-  const isLocal = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname);
-  // En hosts no locales usa siempre mismo origen: /api
-  if (!isLocal) return `/api`;
-  // En local (desarrollo), si hay proxy configurado, úsalo
-  if (proxy) return `${proxy}/api`;
-  // Fallback: URL absoluta
+  // Usa proxy SOLO en desarrollo
+  if (!environment.production && proxy) return `${proxy}/api`;
   return `${api}/api`;
 }
 

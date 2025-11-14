@@ -13,8 +13,7 @@ export const recoleccionProfileInterceptor: HttpInterceptorFn = (req, next) => {
 
     const isSameHost = reqUrl.host === apiUrl.host;
     const isProxyPath = reqUrl.pathname.startsWith(proxyBase);
-    const isApiPath = reqUrl.pathname.startsWith('/api');
-    if (!isSameHost && !isProxyPath && !isApiPath) {
+    if (!isSameHost && !isProxyPath) {
       return next(req);
     }
 
