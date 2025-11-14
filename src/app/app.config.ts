@@ -3,7 +3,6 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { recoleccionProfileInterceptor } from './core/interceptors/recoleccion-profile.interceptor';
 import { authTokenInterceptor } from './core/interceptors/auth-token.interceptor';
-import { provideAnimations } from '@angular/platform-browser/animations';
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
@@ -13,7 +12,6 @@ export const appConfig: ApplicationConfig = {
       authTokenInterceptor,
       recoleccionProfileInterceptor
     ])),
-    provideAnimations(),
     provideZoneChangeDetection({
       eventCoalescing: true,
       runCoalescing: true

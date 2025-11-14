@@ -26,8 +26,12 @@ export class RecoleccionService {
   private base = (() => {
     const api = (environment as any).recoleccionApiUrl?.replace(/\/$/, '') || '';
     const proxy = (environment as any).recoleccionApiProxy || '/recoleccion';
-    if ((environment as any).production) return `/api`;
+    const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    // En hosts no locales usa siempre mismo origen: /api
+    if (!isLocal) return `/api`;
+    // En local (desarrollo), si hay proxy configurado, úsalo
     if (proxy) return `${proxy}/api`;
+    // Fallback: URL absoluta
     return `${api}/api`;
   })();
 
