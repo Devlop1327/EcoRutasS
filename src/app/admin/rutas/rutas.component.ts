@@ -1,8 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { RecoleccionService } from '../../core/services/recoleccion.service';
 import { AdminDataService } from '../../core/services/admin-data.service';
 
 @Component({
@@ -10,27 +8,35 @@ import { AdminDataService } from '../../core/services/admin-data.service';
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     RouterLink
   ],
   templateUrl: './rutas.component.html',
   styleUrls: ['./rutas.component.scss']
 })
 export class RutasComponent implements OnInit {
-  private fb = inject(FormBuilder);
-  private reco = inject(RecoleccionService);
   private admin = inject(AdminDataService);
   private router = inject(Router);
 
   loading = signal(false);
   listLoading = signal(false);
   error = signal<string | null>(null);
-  success = signal<string | null>(null);
   rutas = signal<Array<any>>([]);
 
-  unionForm = this.fb.nonNullable.group({
-    nombre_ruta: ['', [Validators.required]],
-    calles_ids: [''] // coma o salto de línea separados
+  // Paginación (cliente)
+  pageSize = 10;
+  page = signal(1);
+  total = computed(() => this.rutas().length);
+  totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize)));
+  pagedRutas = computed(() => {
+    const start = (this.page() - 1) * this.pageSize;
+    return this.rutas().slice(start, start + this.pageSize);
+  });
+  pagesWindow = computed(() => {
+    const tp = this.totalPages();
+    const cur = this.page();
+    const start = Math.max(1, cur - 3);
+    const end = Math.min(tp, cur + 3);
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   });
 
   async ngOnInit() {
@@ -43,6 +49,7 @@ export class RutasComponent implements OnInit {
     try {
       const data = await this.admin.listRutas();
       this.rutas.set(data);
+      if (this.page() > this.totalPages()) this.page.set(this.totalPages());
     } catch {
       this.error.set('No se pudieron cargar las rutas');
     } finally {
@@ -54,29 +61,10 @@ export class RutasComponent implements OnInit {
     this.router.navigateByUrl('/admin/rutas/editor');
   }
 
-  async crearPorUnion() {
-    if (this.loading() || this.unionForm.invalid) return;
-    this.loading.set(true);
-    this.error.set(null);
-    try {
-      const { nombre_ruta, calles_ids } = this.unionForm.getRawValue();
-      const parsed = (calles_ids || '')
-        .split(/\s|,|;|\n/)
-        .map(s => s.trim())
-        .filter(Boolean);
-      await this.reco.crearRuta({ nombre_ruta, calles_ids: parsed.length ? parsed : undefined });
-      // Crear registro básico también en Supabase
-      await this.admin.createRuta({ nombre: String(nombre_ruta || 'Ruta'), descripcion: 'Generada por unión de calles' });
-      this.success.set('Ruta creada');
-      await this.loadRutas();
-      this.unionForm.reset({ nombre_ruta: '', calles_ids: '' });
-    } catch (e: any) {
-      this.error.set(e?.error?.message || 'No se pudo crear la ruta');
-    } finally {
-      this.loading.set(false);
-      setTimeout(() => this.success.set(null), 2000);
-    }
-  }
+  // Controles de paginación
+  gotoPage(p: number) { if (p >= 1 && p <= this.totalPages()) this.page.set(p); }
+  prevPage() { if (this.page() > 1) this.page.update(x => x - 1); }
+  nextPage() { if (this.page() < this.totalPages()) this.page.update(x => x + 1); }
 
   async eliminar(id: string) {
     if (!id) return;

@@ -166,12 +166,14 @@ export class EditorRutaComponent implements OnInit, OnDestroy {
       };
       const id = this.route.snapshot.queryParamMap.get('id');
       if (!id) {
-        // Nueva: crear en API y en Supabase
-        await this.reco.crearRuta(body);
+        // Nueva: crear en API y en Supabase (guardando ext_id)
+        const creado = await this.reco.crearRuta(body);
+        const extId = (creado as any)?.id ?? (creado as any)?.data?.id ?? (creado as any)?.ruta?.id ?? null;
         await this.admin.createRuta({
           nombre: String(this.form.controls.nombre_ruta.value || 'Ruta'),
           geometria: { type: 'LineString', coordinates },
-          coordenadas: this.puntos()
+          coordenadas: this.puntos(),
+          ext_id: extId ?? undefined
         });
       } else {
         // Edición: actualizar en Supabase

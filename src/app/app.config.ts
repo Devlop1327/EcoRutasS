@@ -4,6 +4,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { recoleccionProfileInterceptor } from './core/interceptors/recoleccion-profile.interceptor';
 import { authTokenInterceptor } from './core/interceptors/auth-token.interceptor';
 import { routes } from './app.routes';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -12,6 +13,7 @@ export const appConfig: ApplicationConfig = {
       authTokenInterceptor,
       recoleccionProfileInterceptor
     ])),
+    provideAnimations(),
     provideZoneChangeDetection({
       eventCoalescing: true,
       runCoalescing: true

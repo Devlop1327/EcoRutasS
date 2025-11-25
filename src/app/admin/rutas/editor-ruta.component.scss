@@ -1,6 +1,6 @@
 .editor-ruta-page {
   padding: 24px;
-  background: #101624;
+  background: var(--bg);
   min-height: 100vh;
 }
 .header {
@@ -12,17 +12,17 @@
 .page-title {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #f3f6fa;
+  color: var(--fg);
   letter-spacing: 0.5px;
 }
 
 .card {
-  background: #181f32;
-  border: 1.5px solid #232b41;
+  background: var(--card);
+  border: 1.5px solid var(--border);
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 2px 12px 0 rgba(20, 30, 50, 0.13);
-  color: #e6eaf3;
+  color: var(--fg);
   transition: box-shadow 0.2s, border 0.2s;
 }
 .card:focus-within, .card:hover {
@@ -42,24 +42,24 @@
   gap: 6px;
 }
 .label {
-  color: #b6c2e0;
+  color: var(--muted);
   font-weight: 600;
   font-size: .95rem;
   letter-spacing: 0.2px;
 }
 .input {
-  border: 1.5px solid #232b41;
-  background: #141a29;
-  color: #e6eaf3;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
   border-radius: 10px;
   padding: 10px 12px;
   outline: none;
   transition: box-shadow .2s, border-color .2s, background .2s;
 }
 .input:focus {
-  border-color: #2e7d32;
-  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.18);
-  background: #181f32;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+  background: var(--card);
 }
 
 .actions {
@@ -128,7 +128,7 @@
   opacity: .75;
   font-size: .9rem;
   margin-top: 8px;
-  color: #b6c2e0;
+  color: var(--muted);
 }
 
 /* NO TOCAR .map-wrap NI #editor-map */

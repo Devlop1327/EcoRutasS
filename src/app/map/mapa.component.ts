@@ -26,7 +26,7 @@ export class MapaComponent implements OnInit, OnDestroy {
 
   loading = signal(true);
   error = signal<string | null>(null);
-  rutas = signal<Array<{ id: string; nombre: string; coordenadas?: Array<[number, number]>; source?: 'api' | 'supa' }>>([]);
+  rutas = signal<Array<{ id: string; nombre: string; coordenadas?: Array<[number, number]>; source?: 'api' | 'supa'; ext_id?: string | null }>>([]);
   vehiculos = signal<Array<{ id: string; placa?: string; lat?: number; lng?: number }>>([]);
 
   // Selección para iniciar/finalizar (solo conductor)
@@ -119,10 +119,11 @@ export class MapaComponent implements OnInit, OnDestroy {
         coordenadas: r.coordenadas || (r.geometria?.type === 'LineString' && Array.isArray(r.geometria.coordinates)
           ? r.geometria.coordinates.map((c: any) => [Number(c[1]), Number(c[0])])
           : undefined),
-        source: 'supa' as const
+        source: 'supa' as const,
+        ext_id: r.ext_id || null
       })).filter(r => !!r.id);
 
-      const byName = new Map<string, { id: string; nombre: string; coordenadas?: Array<[number, number]>; source?: 'api' | 'supa' }>();
+      const byName = new Map<string, { id: string; nombre: string; coordenadas?: Array<[number, number]>; source?: 'api' | 'supa'; ext_id?: string | null }>();
       for (const r of apiMapped) byName.set(r.nombre.toLowerCase(), r);
       for (const r of supaMapped) {
         const key = r.nombre.toLowerCase();
@@ -276,18 +277,21 @@ export class MapaComponent implements OnInit, OnDestroy {
       let apiRutaId = ruta_id as UUID;
       const sel = this.rutas().find(r => r.id === ruta_id) || null;
       if (sel && sel.source === 'supa') {
-        if (!sel.coordenadas || sel.coordenadas.length < 2) { this.isStarting.set(false); return; }
-        const shape = { type: 'LineString', coordinates: sel.coordenadas.map(p => [p[1], p[0]]) };
-        const creado = await this.reco.crearRuta({ nombre_ruta: sel.nombre, shape });
-        apiRutaId = (creado?.id ?? creado?.data?.id ?? creado?.ruta?.id) as UUID;
-        if (!apiRutaId) { this.isStarting.set(false); return; }
-        // Respaldo en Supabase si no existe
-        try {
-          const maybe = await this.admin.getRuta(String(sel.id));
-          if (!maybe) {
-            await this.admin.createRuta({ nombre: sel.nombre, geometria: shape, coordenadas: sel.coordenadas } as any);
-          }
-        } catch {}
+        // Si ya tenemos ext_id almacenado, úsalo y evita recrear
+        const existingExtId = (sel as any).ext_id as string | null | undefined;
+        if (existingExtId) {
+          apiRutaId = existingExtId as UUID;
+        } else {
+          if (!sel.coordenadas || sel.coordenadas.length < 2) { this.isStarting.set(false); return; }
+          const shape = { type: 'LineString', coordinates: sel.coordenadas.map(p => [p[1], p[0]]) };
+          const creado = await this.reco.crearRuta({ nombre_ruta: sel.nombre, shape });
+          apiRutaId = (creado?.id ?? creado?.data?.id ?? creado?.ruta?.id) as UUID;
+          if (!apiRutaId) { this.isStarting.set(false); return; }
+          // Persistir ext_id en Supabase para no recrear en el futuro
+          try {
+            await this.admin.updateRuta(String(sel.id), { ext_id: apiRutaId } as any);
+          } catch {}
+        }
       }
 
       const res = await this.api.iniciarRecorrido({ ruta_id: apiRutaId, vehiculo_id, perfil_id }).toPromise();
@@ -306,7 +310,7 @@ export class MapaComponent implements OnInit, OnDestroy {
         this.isStarting.set(false);
         return;
       }
-      // Crear ruta en API y reintentar
+      // Crear ruta en API y reintentar (y guardar ext_id en Supabase)
       try {
         const ruta = this.rutas().find(r => r.id === ruta_id);
         if (!ruta || !ruta.coordenadas || ruta.coordenadas.length < 2) return;
@@ -315,7 +319,7 @@ export class MapaComponent implements OnInit, OnDestroy {
         const creado = await this.reco.crearRuta({ nombre_ruta: ruta.nombre, shape });
         const newId = (creado?.id ?? creado?.data?.id ?? creado?.ruta?.id) as UUID | null;
         if (!newId) return;
-        try { await this.admin.createRuta({ nombre: ruta.nombre, geometria: shape, coordenadas: ruta.coordenadas } as any); } catch {}
+        try { await this.admin.updateRuta(String(ruta.id), { ext_id: newId } as any); } catch {}
         const res2 = await this.api.iniciarRecorrido({ ruta_id: newId, vehiculo_id, perfil_id }).toPromise();
         const recId2 = (res2 as any)?.body?.id as UUID | null;
         if (recId2) {

@@ -5,34 +5,6 @@
     <a class="btn btn-primary" routerLink="/admin/rutas/editor">🗺️ Crear desde mapa</a>
   </section>
 
-  <section class="union-form">
-    <details class="collapsible" open>
-      <summary>
-        <span class="section-title">Crear por unión de calles</span>
-        <span class="caret" aria-hidden>▾</span>
-      </summary>
-      <form class="card" [formGroup]="unionForm" (ngSubmit)="crearPorUnion()">
-        <div class="grid">
-          <label class="field">
-            <span class="label">Nombre de la ruta</span>
-            <input class="input" type="text" formControlName="nombre_ruta" placeholder="Ruta 1">
-          </label>
-          <label class="field full">
-            <span class="label">Calles IDs (separadas por coma o salto de línea)</span>
-            <textarea class="input" rows="4" formControlName="calles_ids" placeholder="c1, c2, c3"></textarea>
-          </label>
-        </div>
-        <div class="buttons">
-          <button class="btn btn-primary" type="submit" [disabled]="loading() || unionForm.invalid">
-            @if (loading()) { Creando... } @else { Crear }
-          </button>
-        </div>
-      </form>
-      @if (error()) { <div class="alert error">{{ error() }}</div> }
-      @if (success()) { <div class="alert ok">{{ success() }}</div> }
-    </details>
-  </section>
-
   <section class="listado">
     <details class="collapsible" open>
       <summary>
@@ -44,7 +16,7 @@
         <div class="loading">Cargando...</div>
       } @else {
         <div class="list">
-          @for (r of rutas(); track r.id) {
+          @for (r of pagedRutas(); track r.id) {
             <div class="item card">
               <div class="row">
                 <div class="col">
@@ -61,6 +33,16 @@
           @if (rutas().length === 0) {
             <div class="empty">Sin rutas</div>
           }
+        </div>
+        <div class="pagination">
+          <button class="btn btn-ghost" (click)="prevPage()" [disabled]="page() === 1">« Anterior</button>
+          <div class="pages">
+            @for (p of pagesWindow(); track p) {
+              <button class="page-btn" [class.active]="p === page()" (click)="gotoPage(p)">{{ p }}</button>
+            }
+          </div>
+          <button class="btn btn-ghost" (click)="nextPage()" [disabled]="page() === totalPages()">Siguiente »</button>
+          <div class="page-text">Pag {{ page() }} de {{ totalPages() }}</div>
         </div>
       }
     </details>

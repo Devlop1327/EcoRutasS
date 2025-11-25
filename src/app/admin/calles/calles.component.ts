@@ -9,7 +9,7 @@ import { AdminDataService } from '../../core/services/admin-data.service';
 @Component({
   selector: 'app-calles',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './calles.component.html',
   styleUrls: ['./calles.component.scss']
 })

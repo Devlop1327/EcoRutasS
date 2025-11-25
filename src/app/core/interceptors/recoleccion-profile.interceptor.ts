@@ -51,7 +51,7 @@ export const recoleccionProfileInterceptor: HttpInterceptorFn = (req, next) => {
 
     const cloned = req.clone({
       params,
-      setHeaders: { 'x-perfil-id': perfilValue, 'Accept': 'application/json' }
+      setHeaders: { 'Accept': 'application/json' }
     });
     return next(cloned);
   } catch {

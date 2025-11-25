@@ -1,25 +1,25 @@
 .rutas-page {
   padding: 24px;
-  background: #101624;
+  background: var(--bg);
   min-height: 100vh;
 }
 .page-title {
   font-size: 1.6rem;
   font-weight: 700;
   margin-bottom: 16px;
-  color: #f3f6fa;
+  color: var(--fg);
   letter-spacing: 0.5px;
 }
 .actions {
   margin: 8px 0 16px;
 }
 .card {
-  background: #181f32;
-  border: 1.5px solid #232b41;
+  background: var(--card);
+  border: 1.5px solid var(--border);
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 2px 12px 0 rgba(20, 30, 50, 0.13);
-  color: #e6eaf3;
+  color: var(--fg);
   transition: box-shadow 0.2s, border 0.2s;
 }
 .card:focus-within, .card:hover {
@@ -41,24 +41,24 @@
   gap: 6px;
 }
 .label {
-  color: #b6c2e0;
+  color: var(--muted);
   font-weight: 600;
   font-size: .95rem;
   letter-spacing: 0.2px;
 }
 .input {
-  border: 1.5px solid #232b41;
-  background: #141a29;
-  color: #e6eaf3;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
   border-radius: 10px;
   padding: 10px 12px;
   outline: none;
   transition: box-shadow .2s, border-color .2s, background .2s;
 }
 .input:focus {
-  border-color: #2e7d32;
-  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.18);
-  background: #181f32;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+  background: var(--card);
 }
 .buttons {
   margin-top: 8px;
@@ -102,6 +102,11 @@
   background: #3a2323;
   color: #fff;
 }
+
+/* En rutas, el botón Editar y la paginación usan el color de texto del tema (var(--fg)) */
+.rutas-page .btn-ghost:not(.danger) {
+  color: var(--fg);
+}
 .alert {
   margin-top: 10px;
   padding: 10px 14px;
@@ -122,10 +127,10 @@
 
 .list .item {
   margin-bottom: 12px;
-  border: 1.5px solid #232b41;
+  border: 1.5px solid var(--border);
   border-radius: 14px;
-  background: #181f32;
-  color: #e6eaf3;
+  background: var(--card);
+  color: var(--fg);
   transition: background 0.15s, border 0.15s, color 0.15s;
 }
 .row {
@@ -137,19 +142,68 @@
 }
 .title {
   font-weight: 700;
-  color: #e6eaf3;
+  color: var(--fg);
 }
 .subtitle {
   opacity: .8;
   font-size: .9rem;
-  color: #b6c2e0;
+  color: var(--muted);
 }
 .empty {
   opacity: .7;
   padding: 12px 0;
-  color: #b6c2e0;
+  color: var(--muted);
+}
+
+/* Ajustes visuales del encabezado de listado */
+.listado summary .section-title {
+  margin-right: 4px;
+}
+
+.listado summary .count {
+  margin-left: 4px;
 }
 
 @media (max-width: 900px) {
   .union-form .grid { grid-template-columns: 1fr; }
 }
+
+/* Pagination (same look as Vehículos) */
+.pagination {
+  margin-top: 14px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+}
+.pagination .pages {
+  display: inline-flex;
+  gap: 8px;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+.pagination .page-btn {
+  appearance: none;
+  border: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: transparent;
+  color: #cbd5e1;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background .2s, color .2s, border .2s, transform .05s;
+}
+.pagination .page-btn:hover { background: #1b2336; color: #fff; border-color: #232b41; }
+.pagination .page-btn.active {
+  background: linear-gradient(90deg, #2e7d32 0%, #26a69a 100%);
+  color: #fff;
+  border-color: rgba(46, 125, 50, 0.45);
+  box-shadow: 0 2px 10px rgba(38, 166, 154, 0.18);
+}
+.pagination .page-text { margin-left: auto; color: #93a4c0; font-weight: 700; }

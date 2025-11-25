@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RecoleccionService } from '../../core/services/recoleccion.service';
+import { computed } from '@angular/core';
 
 @Component({
   selector: 'app-vehiculos',
@@ -24,6 +25,23 @@ export class VehiculosComponent implements OnInit {
   vehiculos = signal<Array<any>>([]);
   editingId = signal<string | null>(null);
 
+  // Paginación (cliente)
+  pageSize = 10;
+  page = signal(1);
+  total = computed(() => this.vehiculos().length);
+  totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize)));
+  pagedVehiculos = computed(() => {
+    const start = (this.page() - 1) * this.pageSize;
+    return this.vehiculos().slice(start, start + this.pageSize);
+  });
+  pagesWindow = computed(() => {
+    const tp = this.totalPages();
+    const cur = this.page();
+    const start = Math.max(1, cur - 3);
+    const end = Math.min(tp, cur + 3);
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  });
+
   form = this.fb.nonNullable.group({
     placa: ['', [Validators.required]],
     marca: ['', [Validators.required]],
@@ -41,6 +59,8 @@ export class VehiculosComponent implements OnInit {
     try {
       const data = await this.reco.getVehiculos();
       this.vehiculos.set(data);
+      // Ajustar página si quedó fuera de rango
+      if (this.page() > this.totalPages()) this.page.set(this.totalPages());
     } catch (e: any) {
       this.error.set('No se pudieron cargar los vehículos');
     } finally {
@@ -104,4 +124,9 @@ export class VehiculosComponent implements OnInit {
       setTimeout(() => this.success.set(null), 2000);
     }
   }
+
+  // Controles de paginación
+  gotoPage(p: number) { if (p >= 1 && p <= this.totalPages()) this.page.set(p); }
+  prevPage() { if (this.page() > 1) this.page.update(x => x - 1); }
+  nextPage() { if (this.page() < this.totalPages()) this.page.update(x => x + 1); }
 }
