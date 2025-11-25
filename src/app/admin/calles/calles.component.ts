@@ -2,8 +2,6 @@ import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import * as L from 'leaflet';
-import 'leaflet-draw';
 import { AdminDataService } from '../../core/services/admin-data.service';
 
 @Component({
@@ -28,12 +26,14 @@ export class CallesComponent implements OnInit, OnDestroy {
     nombre: ['', [Validators.required]]
   });
 
-  private map?: L.Map;
-  private drawnItems?: L.FeatureGroup;
-  private layerGroup?: L.LayerGroup;
+  private map: any;
+  private drawnItems: any;
+  private layerGroup: any;
+  private leafletLoaded = false;
   puntos = signal<Array<[number, number]>>([]);
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    await this.loadLeafletFromCdn();
     this.initMap();
     this.loadCalles();
   }
@@ -45,7 +45,34 @@ export class CallesComponent implements OnInit, OnDestroy {
     }
   }
 
+  private async loadLeafletFromCdn(): Promise<void> {
+    if (this.leafletLoaded) return;
+
+    await new Promise<void>((resolve, reject) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+      link.crossOrigin = '';
+      link.onload = () => resolve();
+      link.onerror = () => reject(new Error('No se pudo cargar Leaflet CSS'));
+      document.head.appendChild(link);
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+      script.crossOrigin = '';
+      script.onload = () => { this.leafletLoaded = true; resolve(); };
+      script.onerror = () => reject(new Error('No se pudo cargar Leaflet JS'));
+      document.body.appendChild(script);
+    });
+  }
+
   private initMap() {
+    const L: any = (window as any).L;
+    if (!L) return;
     this.map = L.map('calles-map', { center: [3.8801, -77.0283], zoom: 13 });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(this.map);
     this.layerGroup = L.layerGroup().addTo(this.map);
@@ -91,7 +118,8 @@ export class CallesComponent implements OnInit, OnDestroy {
   }
 
   private draw() {
-    if (!this.layerGroup) return;
+    const L: any = (window as any).L;
+    if (!this.layerGroup || !L) return;
     this.layerGroup.clearLayers();
     const pts = this.puntos();
     for (const p of pts) {
@@ -163,12 +191,15 @@ export class CallesComponent implements OnInit, OnDestroy {
       this.draw();
       // Dibujar en drawnItems y ajustar bounds
       this.drawnItems!.clearLayers();
-      const poly = L.polyline(coords, { color: '#2563eb', weight: 3 });
-      this.drawnItems!.addLayer(poly);
-      try {
-        const bounds = (L as any).latLngBounds(coords.map((p: any) => ({ lat: p[0], lng: p[1] })));
-        this.map!.fitBounds(bounds.pad(0.2));
-      } catch {}
+      const L: any = (window as any).L;
+      if (L) {
+        const poly = L.polyline(coords, { color: '#2563eb', weight: 3 });
+        this.drawnItems!.addLayer(poly);
+        try {
+          const bounds = (L as any).latLngBounds(coords.map((p: any) => ({ lat: p[0], lng: p[1] })));
+          this.map!.fitBounds(bounds.pad(0.2));
+        } catch {}
+      }
     }
   }
 

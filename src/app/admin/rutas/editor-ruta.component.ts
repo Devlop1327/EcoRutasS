@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RecoleccionService } from '../../core/services/recoleccion.service';
-import * as L from 'leaflet';
-import 'leaflet-draw';
 import { AdminDataService } from '../../core/services/admin-data.service';
 
 @Component({
@@ -35,9 +33,11 @@ export class EditorRutaComponent implements OnInit, OnDestroy {
   private map: any;
   private layerGroup: any;
   private drawnItems: any;
+  private leafletLoaded = false;
   puntos = signal<Array<[number, number]>>([]); // [lat, lng]
 
   async ngOnInit() {
+    await this.loadLeafletFromCdn();
     this.initMap();
     const id = this.route.snapshot.queryParamMap.get('id');
     if (id) {
@@ -67,7 +67,34 @@ export class EditorRutaComponent implements OnInit, OnDestroy {
     }
   }
 
+  private async loadLeafletFromCdn(): Promise<void> {
+    if (this.leafletLoaded) return;
+
+    await new Promise<void>((resolve, reject) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+      link.crossOrigin = '';
+      link.onload = () => resolve();
+      link.onerror = () => reject(new Error('No se pudo cargar Leaflet CSS'));
+      document.head.appendChild(link);
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+      script.crossOrigin = '';
+      script.onload = () => { this.leafletLoaded = true; resolve(); };
+      script.onerror = () => reject(new Error('No se pudo cargar Leaflet JS'));
+      document.body.appendChild(script);
+    });
+  }
+
   private initMap() {
+    const L: any = (window as any).L;
+    if (!L) return;
     const BV_COORDS: [number, number] = [3.882, -77.031];
     const BV_BOUNDS: [[number, number], [number, number]] = [[3.70, -77.25], [4.05, -76.85]];
     this.map = L.map('editor-map', {
@@ -123,7 +150,8 @@ export class EditorRutaComponent implements OnInit, OnDestroy {
   }
 
   private draw() {
-    if (!this.layerGroup) return;
+    const L: any = (window as any).L;
+    if (!this.layerGroup || !L) return;
     this.layerGroup.clearLayers();
     const pts = this.puntos();
     for (const p of pts) {
