@@ -33,12 +33,14 @@ export class EditorRutaComponent implements OnInit, OnDestroy {
   private map: any;
   private layerGroup: any;
   private drawnItems: any;
+  private apiCallesLayer: any;
   private leafletLoaded = false;
   puntos = signal<Array<[number, number]>>([]); // [lat, lng]
 
   async ngOnInit() {
     await this.loadLeafletFromCdn();
     this.initMap();
+    await this.drawApiCalles();
     const id = this.route.snapshot.queryParamMap.get('id');
     if (id) {
       try {
@@ -129,6 +131,7 @@ export class EditorRutaComponent implements OnInit, OnDestroy {
     });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(this.map);
     this.layerGroup = L.layerGroup().addTo(this.map);
+    this.apiCallesLayer = L.layerGroup().addTo(this.map);
     this.drawnItems = new L.FeatureGroup();
     this.map.addLayer(this.drawnItems);
 
@@ -182,6 +185,24 @@ export class EditorRutaComponent implements OnInit, OnDestroy {
     }
     if (pts.length > 1) {
       L.polyline(pts, { color: '#059669', weight: 3 }).addTo(this.layerGroup);
+    }
+  }
+
+  private async drawApiCalles() {
+    const L: any = (window as any).L;
+    if (!this.map || !L) return;
+    try {
+      const calles = await this.reco.getCalles();
+      if (!this.apiCallesLayer) this.apiCallesLayer = L.layerGroup().addTo(this.map);
+      this.apiCallesLayer.clearLayers();
+      for (const c of calles) {
+        const coords = (c as any).coordenadas as Array<[number, number]> | undefined;
+        if (coords && coords.length > 1) {
+          L.polyline(coords, { color: '#f97316', weight: 2, opacity: 0.6 }).addTo(this.apiCallesLayer);
+        }
+      }
+    } catch {
+      // silencioso, no afecta al editor si falla la API
     }
   }
 

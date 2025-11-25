@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AdminDataService } from '../../core/services/admin-data.service';
+import { RecoleccionService } from '../../core/services/recoleccion.service';
 
 @Component({
   selector: 'app-calles',
@@ -14,6 +15,7 @@ import { AdminDataService } from '../../core/services/admin-data.service';
 export class CallesComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private admin = inject(AdminDataService);
+  private reco = inject(RecoleccionService);
 
   loading = signal(false);
   listLoading = signal(false);
@@ -29,12 +31,14 @@ export class CallesComponent implements OnInit, OnDestroy {
   private map: any;
   private drawnItems: any;
   private layerGroup: any;
+  private apiCallesLayer: any;
   private leafletLoaded = false;
   puntos = signal<Array<[number, number]>>([]);
 
   async ngOnInit(): Promise<void> {
     await this.loadLeafletFromCdn();
     this.initMap();
+    await this.drawApiCalles();
     this.loadCalles();
   }
 
@@ -99,6 +103,7 @@ export class CallesComponent implements OnInit, OnDestroy {
     this.map = L.map('calles-map', { center: [3.8801, -77.0283], zoom: 13 });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(this.map);
     this.layerGroup = L.layerGroup().addTo(this.map);
+    this.apiCallesLayer = L.layerGroup().addTo(this.map);
     this.drawnItems = new L.FeatureGroup();
     this.map.addLayer(this.drawnItems);
 
@@ -153,6 +158,24 @@ export class CallesComponent implements OnInit, OnDestroy {
     }
   }
 
+  private async drawApiCalles() {
+    const L: any = (window as any).L;
+    if (!this.map || !L) return;
+    try {
+      const apiCalles = await this.reco.getCalles();
+      if (!this.apiCallesLayer) this.apiCallesLayer = L.layerGroup().addTo(this.map);
+      this.apiCallesLayer.clearLayers();
+      for (const c of apiCalles) {
+        const coords = (c as any).coordenadas as Array<[number, number]> | undefined;
+        if (coords && coords.length > 1) {
+          L.polyline(coords, { color: '#f97316', weight: 2, opacity: 0.8 }).addTo(this.apiCallesLayer);
+        }
+      }
+    } catch {
+      // silencioso: si falla la API igual el admin puede dibujar manualmente
+    }
+  }
+
   async save() {
     if (this.loading() || this.form.invalid || this.puntos().length < 2) return;
     this.loading.set(true);
@@ -195,6 +218,45 @@ export class CallesComponent implements OnInit, OnDestroy {
       this.error.set('No se pudieron cargar las calles');
     } finally {
       this.listLoading.set(false);
+    }
+  }
+
+  async importFromApi() {
+    if (this.loading()) return;
+    this.loading.set(true);
+    this.error.set(null);
+    this.success.set(null);
+    try {
+      const [apiCalles, supaCalles] = await Promise.all([
+        this.reco.getCalles(),
+        this.admin.listCalles().catch(() => [] as any[])
+      ]);
+
+      const existingNames = new Set(
+        (supaCalles as any[]).map(c => String(c.nombre || '').toLowerCase()).filter(n => !!n)
+      );
+
+      const toCreate = apiCalles
+        .filter(c => !!c.nombre && !existingNames.has(String(c.nombre).toLowerCase()) && c.coordenadas && c.coordenadas.length > 1)
+        .map(c => ({
+          nombre: c.nombre,
+          geometria: { type: 'LineString', coordinates: c.coordenadas!.map(p => [p[1], p[0]]) },
+          coordenadas: c.coordenadas
+        }));
+
+      if (!toCreate.length) {
+        this.success.set('No hay nuevas calles para importar');
+        return;
+      }
+
+      await Promise.allSettled(toCreate.map(body => this.admin.createCalle(body as any)));
+      this.success.set('Calles importadas desde la API');
+      await this.loadCalles();
+    } catch (e: any) {
+      this.error.set(e?.message || 'No se pudieron importar las calles desde la API');
+    } finally {
+      this.loading.set(false);
+      setTimeout(() => this.success.set(null), 2500);
     }
   }
 

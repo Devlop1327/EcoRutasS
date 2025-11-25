@@ -18,6 +18,12 @@ type Vehiculo = {
   lng?: number;
 };
 
+type Calle = {
+  id: string;
+  nombre: string;
+  coordenadas?: Array<[number, number]>;
+};
+
 @Injectable({ providedIn: 'root' })
 export class RecoleccionService {
   private http = inject(HttpClient);
@@ -35,8 +41,18 @@ export class RecoleccionService {
       id: String(r.id ?? r.ext_id ?? r.codigo ?? ''),
       nombre: String(r.nombre ?? r.name ?? r.titulo ?? 'Ruta'),
       zona: r.zona ?? r.zone ?? undefined,
-      coordenadas: this.parseCoords(r.coordenadas ?? r.coordinates ?? r.path ?? r.geometry),
+      coordenadas: this.parseCoords(r.coordenadas ?? r.coordinates ?? r.path ?? r.geometry ?? r.shape),
     }));
+  }
+
+  async getCalles(): Promise<Calle[]> {
+    const json = await firstValueFrom(this.http.get<any>(`${this.base}/calles`, { withCredentials: false }));
+    const data = json?.data ?? json;
+    return (data || []).map((c: any) => ({
+      id: String(c.id ?? c.ext_id ?? c.codigo ?? ''),
+      nombre: String(c.nombre_calle ?? c.nombre ?? c.name ?? 'Calle'),
+      coordenadas: this.parseCoords(c.coordenadas ?? c.coordinates ?? c.path ?? c.geometry ?? c.shape),
+    })).filter((c: Calle) => !!c.id && !!c.coordenadas && c.coordenadas.length > 1);
   }
 
   private parseCoords(raw: any): Array<[number, number]> | undefined {
@@ -62,6 +78,18 @@ export class RecoleccionService {
     // GeoJSON LineString
     if (raw.type === 'LineString' && Array.isArray(raw.coordinates)) {
       return raw.coordinates.map((c: any) => [Number(c[1]), Number(c[0])]); // GeoJSON es [lng, lat]
+    }
+    // GeoJSON MultiLineString: [[ [lng,lat], ... ], ... ]
+    if (raw.type === 'MultiLineString' && Array.isArray(raw.coordinates)) {
+      const flat: Array<[number, number]> = [];
+      for (const line of raw.coordinates) {
+        if (Array.isArray(line)) {
+          for (const c of line) {
+            flat.push([Number(c[1]), Number(c[0])]);
+          }
+        }
+      }
+      return flat.length ? flat : undefined;
     }
     return undefined;
   }

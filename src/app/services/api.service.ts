@@ -101,7 +101,6 @@ export class ApiService {
     });
   }
 
-  // 3.3) Finalizar recorrido existente
   finalizarRecorrido(recorrido_id: UUID, perfil_id: UUID) {
     const body: RecorridoFinalizarBody = { perfil_id };
     return this.http.post(`${this.API}/recorridos/${recorrido_id}/finalizar`, body, {

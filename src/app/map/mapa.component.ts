@@ -39,6 +39,7 @@ export class MapaComponent implements OnInit, OnDestroy {
   private leafletLoaded = false;
   private map: any | null = null;
   private selectedRutaLayer: any | null = null;
+  private callesLayer: any | null = null;
   private liveMarker: any | null = null;
   private posWatchId: number | null = null;
   private liveCentered = false;
@@ -50,7 +51,7 @@ export class MapaComponent implements OnInit, OnDestroy {
     try {
       await this.loadLeafletFromCdn();
       this.initMap();
-      await Promise.all([this.loadRutas(), this.loadVehiculos()]);
+      await Promise.all([this.loadRutas(), this.loadVehiculos(), this.loadCalles()]);
       // No dibujar todas las rutas; solo cuando el usuario seleccione
       this.drawVehiculos();
       await this.checkRecorridoActivo();
@@ -58,6 +59,24 @@ export class MapaComponent implements OnInit, OnDestroy {
       this.error.set(e?.message || 'Error cargando el mapa');
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  private async loadCalles() {
+    const L: any = (window as any).L;
+    if (!this.map || !L) return;
+    try {
+      const calles = await this.reco.getCalles();
+      if (!this.callesLayer) this.callesLayer = L.layerGroup().addTo(this.map);
+      this.callesLayer.clearLayers();
+      for (const c of calles) {
+        const coords = (c as any).coordenadas as Array<[number, number]> | undefined;
+        if (coords && coords.length > 1) {
+          L.polyline(coords, { color: '#f97316', weight: 2, opacity: 0.6 }).addTo(this.callesLayer);
+        }
+      }
+    } catch {
+      // silencioso
     }
   }
 
