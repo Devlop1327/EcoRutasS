@@ -48,6 +48,7 @@ export class CallesComponent implements OnInit, OnDestroy {
   private async loadLeafletFromCdn(): Promise<void> {
     if (this.leafletLoaded) return;
 
+    // CSS Leaflet base
     await new Promise<void>((resolve, reject) => {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
@@ -59,20 +60,42 @@ export class CallesComponent implements OnInit, OnDestroy {
       document.head.appendChild(link);
     });
 
+    // CSS leaflet-draw
+    await new Promise<void>((resolve, reject) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css';
+      link.crossOrigin = '';
+      link.onload = () => resolve();
+      link.onerror = () => reject(new Error('No se pudo cargar Leaflet Draw CSS'));
+      document.head.appendChild(link);
+    });
+
+    // JS Leaflet base
     await new Promise<void>((resolve, reject) => {
       const script = document.createElement('script');
       script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
       script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
       script.crossOrigin = '';
-      script.onload = () => { this.leafletLoaded = true; resolve(); };
+      script.onload = () => resolve();
       script.onerror = () => reject(new Error('No se pudo cargar Leaflet JS'));
+      document.body.appendChild(script);
+    });
+
+    // JS leaflet-draw
+    await new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js';
+      script.crossOrigin = '';
+      script.onload = () => { this.leafletLoaded = true; resolve(); };
+      script.onerror = () => reject(new Error('No se pudo cargar Leaflet Draw JS'));
       document.body.appendChild(script);
     });
   }
 
   private initMap() {
     const L: any = (window as any).L;
-    if (!L) return;
+    if (!L || !(L as any).Control || !(L as any).Control.Draw) return;
     this.map = L.map('calles-map', { center: [3.8801, -77.0283], zoom: 13 });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(this.map);
     this.layerGroup = L.layerGroup().addTo(this.map);
