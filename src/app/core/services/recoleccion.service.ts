@@ -67,23 +67,61 @@ export class RecoleccionService {
   }
 
   async getVehiculos(): Promise<Vehiculo[]> {
-    const perfil = environment.profileId;
-    const json = await firstValueFrom(this.http.get<any>(`${this.base}/vehiculos`, {
-      withCredentials: false,
-      params: { perfil_id: String(perfil) }
-    }));
-    const data = json?.data ?? json;
-    return (data || []).map((v: any) => ({
-      id: String(v.id ?? v.ext_id ?? v.codigo ?? ''),
-      placa: v.placa ?? v.plate ?? undefined,
-      marca: v.marca ?? v.brand ?? undefined,
-      modelo: v.modelo ?? v.model ?? undefined,
-      activo: v.activo ?? v.active ?? true,
-      rutaId: v.ruta_id ?? v.route_ext_id ?? undefined,
-      lat: v.lat ?? v.latitude ?? v.latitud ?? undefined,
-      lng: v.lng ?? v.longitude ?? v.longitud ?? undefined,
-    }));
+  const perfil = environment.profileId;
+  let allVehiculos: any[] = [];
+  let currentPage = 1;
+  let hasMorePages = true;
+
+  console.log('Cargando todos los vehículos');
+
+  // Cargar TODAS las páginas
+  while (hasMorePages) {
+    try {
+      const json = await firstValueFrom(this.http.get<any>(`${this.base}/vehiculos`, {
+        withCredentials: false,
+        params: { 
+          perfil_id: String(perfil),
+          page: String(currentPage)
+        }
+      }));
+
+      console.log(`Página ${currentPage}:`, json?.data?.length || 0, 'vehículos');
+
+      const data = json?.data ?? [];
+      
+      // Agregar vehículos de esta página
+      if (Array.isArray(data) && data.length > 0) {
+        allVehiculos = allVehiculos.concat(data);
+      }
+
+      // Verificar si hay más páginas
+      const lastPage = json?.last_page ?? 1;
+      const nextPageUrl = json?.next_page_url;
+      
+      if (currentPage >= lastPage || !nextPageUrl) {
+        hasMorePages = false;
+      } else {
+        currentPage++;
+      }
+
+    } catch (error) {
+      hasMorePages = false;
+    }
   }
+  console.log(`Total vehículos cargados: ${allVehiculos.length}`);
+
+  // Mapear todos los vehículos al formato esperado
+  return allVehiculos.map((v: any) => ({
+    id: String(v.id ?? v.ext_id ?? v.codigo ?? ''),
+    placa: v.placa ?? v.plate ?? undefined,
+    marca: v.marca ?? v.brand ?? undefined,
+    modelo: v.modelo ?? v.model ?? undefined,
+    activo: v.activo ?? v.active ?? true,
+    rutaId: v.ruta_id ?? v.route_ext_id ?? undefined,
+    lat: v.lat ?? v.latitude ?? v.latitud ?? undefined,
+    lng: v.lng ?? v.longitude ?? v.longitud ?? undefined,
+  }));
+}
 
   // POST /api/vehiculos
   async crearVehiculo(payload: { placa: string; marca: string; modelo: string; activo: boolean }): Promise<any> {
