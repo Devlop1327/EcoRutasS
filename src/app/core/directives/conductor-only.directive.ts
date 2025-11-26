@@ -16,7 +16,7 @@ export class ConductorOnlyDirective {
   constructor() {
     effect(() => {
       const role = this.auth.role();
-      if (role === 'conductor') {
+      if (role === 'conductor' || role === 'admin') {
         this.show();
         this.setDisabled(false);
       } else {
