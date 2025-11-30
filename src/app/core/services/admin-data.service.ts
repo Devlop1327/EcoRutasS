@@ -19,6 +19,7 @@ export type Ruta = {
   geometria?: any; // GeoJSON
   coordenadas?: Array<[number, number]> | null;
   estado?: string;
+  ext_id?: string | null; // id en API de recolección
 };
 
 export type Calle = {

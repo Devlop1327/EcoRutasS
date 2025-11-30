@@ -2,20 +2,20 @@ import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import * as L from 'leaflet';
-import 'leaflet-draw';
 import { AdminDataService } from '../../core/services/admin-data.service';
+import { RecoleccionService } from '../../core/services/recoleccion.service';
 
 @Component({
   selector: 'app-calles',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './calles.component.html',
   styleUrls: ['./calles.component.scss']
 })
 export class CallesComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private admin = inject(AdminDataService);
+  private reco = inject(RecoleccionService);
 
   loading = signal(false);
   listLoading = signal(false);
@@ -28,13 +28,17 @@ export class CallesComponent implements OnInit, OnDestroy {
     nombre: ['', [Validators.required]]
   });
 
-  private map?: L.Map;
-  private drawnItems?: L.FeatureGroup;
-  private layerGroup?: L.LayerGroup;
+  private map: any;
+  private drawnItems: any;
+  private layerGroup: any;
+  private apiCallesLayer: any;
+  private leafletLoaded = false;
   puntos = signal<Array<[number, number]>>([]);
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    await this.loadLeafletFromCdn();
     this.initMap();
+    await this.drawApiCalles();
     this.loadCalles();
   }
 
@@ -45,10 +49,61 @@ export class CallesComponent implements OnInit, OnDestroy {
     }
   }
 
+  private async loadLeafletFromCdn(): Promise<void> {
+    if (this.leafletLoaded) return;
+
+    // CSS Leaflet base
+    await new Promise<void>((resolve, reject) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+      link.crossOrigin = '';
+      link.onload = () => resolve();
+      link.onerror = () => reject(new Error('No se pudo cargar Leaflet CSS'));
+      document.head.appendChild(link);
+    });
+
+    // CSS leaflet-draw
+    await new Promise<void>((resolve, reject) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css';
+      link.crossOrigin = '';
+      link.onload = () => resolve();
+      link.onerror = () => reject(new Error('No se pudo cargar Leaflet Draw CSS'));
+      document.head.appendChild(link);
+    });
+
+    // JS Leaflet base
+    await new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+      script.crossOrigin = '';
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('No se pudo cargar Leaflet JS'));
+      document.body.appendChild(script);
+    });
+
+    // JS leaflet-draw
+    await new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js';
+      script.crossOrigin = '';
+      script.onload = () => { this.leafletLoaded = true; resolve(); };
+      script.onerror = () => reject(new Error('No se pudo cargar Leaflet Draw JS'));
+      document.body.appendChild(script);
+    });
+  }
+
   private initMap() {
+    const L: any = (window as any).L;
+    if (!L || !(L as any).Control || !(L as any).Control.Draw) return;
     this.map = L.map('calles-map', { center: [3.8801, -77.0283], zoom: 13 });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(this.map);
     this.layerGroup = L.layerGroup().addTo(this.map);
+    this.apiCallesLayer = L.layerGroup().addTo(this.map);
     this.drawnItems = new L.FeatureGroup();
     this.map.addLayer(this.drawnItems);
 
@@ -91,7 +146,8 @@ export class CallesComponent implements OnInit, OnDestroy {
   }
 
   private draw() {
-    if (!this.layerGroup) return;
+    const L: any = (window as any).L;
+    if (!this.layerGroup || !L) return;
     this.layerGroup.clearLayers();
     const pts = this.puntos();
     for (const p of pts) {
@@ -99,6 +155,24 @@ export class CallesComponent implements OnInit, OnDestroy {
     }
     if (pts.length > 1) {
       L.polyline(pts, { color: '#2563eb', weight: 3 }).addTo(this.layerGroup);
+    }
+  }
+
+  private async drawApiCalles() {
+    const L: any = (window as any).L;
+    if (!this.map || !L) return;
+    try {
+      const apiCalles = await this.reco.getCalles();
+      if (!this.apiCallesLayer) this.apiCallesLayer = L.layerGroup().addTo(this.map);
+      this.apiCallesLayer.clearLayers();
+      for (const c of apiCalles) {
+        const coords = (c as any).coordenadas as Array<[number, number]> | undefined;
+        if (coords && coords.length > 1) {
+          L.polyline(coords, { color: '#f97316', weight: 2, opacity: 0.8 }).addTo(this.apiCallesLayer);
+        }
+      }
+    } catch {
+      // silencioso: si falla la API igual el admin puede dibujar manualmente
     }
   }
 
@@ -147,6 +221,45 @@ export class CallesComponent implements OnInit, OnDestroy {
     }
   }
 
+  async importFromApi() {
+    if (this.loading()) return;
+    this.loading.set(true);
+    this.error.set(null);
+    this.success.set(null);
+    try {
+      const [apiCalles, supaCalles] = await Promise.all([
+        this.reco.getCalles(),
+        this.admin.listCalles().catch(() => [] as any[])
+      ]);
+
+      const existingNames = new Set(
+        (supaCalles as any[]).map(c => String(c.nombre || '').toLowerCase()).filter(n => !!n)
+      );
+
+      const toCreate = apiCalles
+        .filter(c => !!c.nombre && !existingNames.has(String(c.nombre).toLowerCase()) && c.coordenadas && c.coordenadas.length > 1)
+        .map(c => ({
+          nombre: c.nombre,
+          geometria: { type: 'LineString', coordinates: c.coordenadas!.map(p => [p[1], p[0]]) },
+          coordenadas: c.coordenadas
+        }));
+
+      if (!toCreate.length) {
+        this.success.set('No hay nuevas calles para importar');
+        return;
+      }
+
+      await Promise.allSettled(toCreate.map(body => this.admin.createCalle(body as any)));
+      this.success.set('Calles importadas desde la API');
+      await this.loadCalles();
+    } catch (e: any) {
+      this.error.set(e?.message || 'No se pudieron importar las calles desde la API');
+    } finally {
+      this.loading.set(false);
+      setTimeout(() => this.success.set(null), 2500);
+    }
+  }
+
   newCalle() {
     this.editingId.set(null);
     this.form.reset({ nombre: '' });
@@ -163,12 +276,15 @@ export class CallesComponent implements OnInit, OnDestroy {
       this.draw();
       // Dibujar en drawnItems y ajustar bounds
       this.drawnItems!.clearLayers();
-      const poly = L.polyline(coords, { color: '#2563eb', weight: 3 });
-      this.drawnItems!.addLayer(poly);
-      try {
-        const bounds = (L as any).latLngBounds(coords.map((p: any) => ({ lat: p[0], lng: p[1] })));
-        this.map!.fitBounds(bounds.pad(0.2));
-      } catch {}
+      const L: any = (window as any).L;
+      if (L) {
+        const poly = L.polyline(coords, { color: '#2563eb', weight: 3 });
+        this.drawnItems!.addLayer(poly);
+        try {
+          const bounds = (L as any).latLngBounds(coords.map((p: any) => ({ lat: p[0], lng: p[1] })));
+          this.map!.fitBounds(bounds.pad(0.2));
+        } catch {}
+      }
     }
   }
 

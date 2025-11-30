@@ -50,7 +50,7 @@
         <div class="loading">Cargando...</div>
       } @else {
         <div class="list">
-          @for (v of vehiculos(); track v.id) {
+          @for (v of pagedVehiculos(); track v.id) {
             <div class="item card">
               <div class="item-row">
                 <div class="item-main">
@@ -68,6 +68,16 @@
           @if (vehiculos().length === 0) {
             <div class="empty">Sin vehículos</div>
           }
+        </div>
+        <div class="pagination">
+          <button class="btn btn-ghost" (click)="prevPage()" [disabled]="page() === 1">« Anterior</button>
+          <div class="pages">
+            @for (p of pagesWindow(); track p) {
+              <button class="page-btn" [class.active]="p === page()" (click)="gotoPage(p)">{{ p }}</button>
+            }
+          </div>
+          <button class="btn btn-ghost" (click)="nextPage()" [disabled]="page() === totalPages()">Siguiente »</button>
+          <div class="page-text">Pag {{ page() }} de {{ totalPages() }}</div>
         </div>
       }
     </details>

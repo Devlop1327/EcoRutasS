@@ -17,11 +17,6 @@
 
   <main class="main">
     <div class="hero-anim" aria-hidden="true"></div>
-    <div class="status-bar">
-      <span class="pulse-dot"></span>
-      <span>En vivo en Buenaventura</span>
-      <a routerLink="/mapa" class="status-link">Ir al mapa →</a>
-    </div>
     <div class="welcome">
       <h2 class="title">{{ greeting() }}, {{ userName() }}!</h2>
       <p class="subtitle">Bienvenido a tu panel de control de recolección</p>
@@ -90,23 +85,34 @@
         <h3 class="section-title">Accesos rápidos</h3>
         <div class="quick-links">
           <a routerLink="/mapa" class="quick-link">
-            <span class="link-icon">📍</span>
-            <span class="link-text">Ver mapa</span>
+            <span class="quick-link-icon-wrap">
+              <span class="link-icon">📍</span>
+            </span>
+            <div class="quick-link-content">
+              <span class="link-title">Ver mapa</span>
+              <span class="link-subtitle">Rastrea en vivo los recorridos</span>
+            </div>
           </a>
           <a routerLink="/perfil" class="quick-link">
-            <span class="link-icon">⚙️</span>
-            <span class="link-text">Configuración</span>
+            <span class="quick-link-icon-wrap">
+              <span class="link-icon">⚙️</span>
+            </span>
+            <div class="quick-link-content">
+              <span class="link-title">Configuración</span>
+              <span class="link-subtitle">Gestiona tu perfil y alertas</span>
+            </div>
           </a>
           @if (role() === 'admin') {
             <a routerLink="/admin" class="quick-link">
-              <span class="link-icon">🛠️</span>
-              <span class="link-text">Panel administrativo</span>
+              <span class="quick-link-icon-wrap">
+                <span class="link-icon">🛠️</span>
+              </span>
+              <div class="quick-link-content">
+                <span class="link-title">Panel administrativo</span>
+                <span class="link-subtitle">Vehículos, rutas y recorridos</span>
+              </div>
             </a>
           }
-          <a routerLink="/auth/login" class="quick-link">
-            <span class="link-icon">ℹ️</span>
-            <span class="link-text">Ayuda</span>
-          </a>
         </div>
       </div>
     }

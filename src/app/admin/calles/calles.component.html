@@ -1,7 +1,6 @@
 <div class="admin-page">
   <header class="page-header">
     <h2>Calles</h2>
-    <a routerLink="/admin" class="back">← Volver</a>
   </header>
 
   <section class="tools">
@@ -11,6 +10,9 @@
         <input type="text" formControlName="nombre" placeholder="Ej. Calle 1" />
       </label>
       <button type="button" (click)="save()" [disabled]="loading() || form.invalid || puntos().length < 2">Guardar</button>
+      <button type="button" class="secondary" (click)="importFromApi()" [disabled]="loading() || listLoading()">
+        Importar desde API
+      </button>
     </form>
     @if (error()) { <div class="msg error">{{ error() }}</div> }
     @if (success()) { <div class="msg ok">{{ success() }}</div> }
