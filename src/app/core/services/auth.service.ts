@@ -42,8 +42,13 @@ export class AuthService {
     this.checkAuth();
 
     // Escuchar cambios de autenticación
-    this.supabase.auth.onAuthStateChange((event, session) => {
+    this.supabase.auth.onAuthStateChange(async (event, session) => {
       this.currentUser.set(session?.user ?? null);
+      if (session?.user?.id) {
+        await this.loadProfileRole(session.user.id);
+      } else {
+        this.role.set(null);
+      }
       this.isLoading.set(false);
     });
   }
@@ -191,16 +196,47 @@ export class AuthService {
 
   async loadProfileRole(userId: string): Promise<void> {
     try {
-      const { data, error } = await this.supabase
+      console.log('[AuthService] Loading profile role for user:', userId);
+      
+      // Crear un timeout de 5 segundos
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile query timeout')), 5000)
+      );
+      
+      const queryPromise = this.supabase
         .from('profiles')
         .select('role')
-        .eq('id', userId)
-        .single();
-      if (error) throw error;
-      const r = (data as any)?.role as 'cliente' | 'conductor' | 'admin' | null;
-      this.role.set(r ?? null);
-    } catch {
-      this.role.set(null);
+        .eq('id', userId);
+      
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
+      
+      console.log('[AuthService] Profile query result:', { data, error });
+      
+      if (error) {
+        console.error('[AuthService] Error loading profile role:', error);
+        this.role.set('cliente');
+        return;
+      }
+      
+      if (!data || (Array.isArray(data) && data.length === 0)) {
+        console.warn('[AuthService] No profile found for user:', userId);
+        this.role.set('cliente');
+        return;
+      }
+
+      const roleValue = Array.isArray(data) ? (data[0] as any)?.role : (data as any)?.role;
+      console.log('[AuthService] Role value from DB:', roleValue);
+      
+      if (roleValue && ['cliente', 'conductor', 'admin'].includes(roleValue)) {
+        this.role.set(roleValue);
+        console.log('[AuthService] Role set to:', roleValue);
+      } else {
+        console.warn('[AuthService] Invalid role value, defaulting to cliente');
+        this.role.set('cliente');
+      }
+    } catch (error) {
+      console.error('[AuthService] Exception in loadProfileRole:', error);
+      this.role.set('cliente');
     }
   }
 
