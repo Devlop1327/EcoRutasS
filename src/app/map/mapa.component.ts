@@ -41,6 +41,8 @@ export class MapaComponent implements OnInit, OnDestroy {
   private selectedRutaLayer: any | null = null;
   private callesLayer: any | null = null;
   private liveMarker: any | null = null;
+  private conductorMarker: any | null = null;
+  private conductorPath: any | null = null;
   private posWatchId: number | null = null;
   private liveCentered = false;
   private meIcon: any | null = null;
@@ -54,6 +56,8 @@ export class MapaComponent implements OnInit, OnDestroy {
   private simMarker: any | null = null;
   private simTimerId: number | null = null;
   private simIdx = 0;
+  // Para tracking de conductor (cliente)
+  private conductorTrackingInterval: number | null = null;
 
   async ngOnInit() {
     try {
@@ -101,6 +105,7 @@ export class MapaComponent implements OnInit, OnDestroy {
       if (!activos.length) {
         this.currentRecorridoId.set(null);
         this.currentRecorridoRutaName.set(null);
+        this.stopConductorTracking();
         return;
       }
       const activo = activos[0];
@@ -113,6 +118,11 @@ export class MapaComponent implements OnInit, OnDestroy {
       }
       this.currentRecorridoId.set(recId || null);
       this.currentRecorridoRutaName.set(rutaName);
+      
+      // Iniciar tracking del conductor si hay un recorrido activo
+      if (recId) {
+        this.startConductorTracking(recId);
+      }
     } catch (e) {
       // silencioso
     }
@@ -332,6 +342,8 @@ export class MapaComponent implements OnInit, OnDestroy {
         this.currentRecorridoId.set(recId);
         const selRuta = this.rutas().find(r => (r.id === ruta_id) || (r.id === apiRutaId));
         if (selRuta) this.currentRecorridoRutaName.set(selRuta.nombre);
+        // Iniciar tracking del conductor para que otros clientes lo vean
+        this.startConductorTracking(recId);
         this.startSimulatedRun(recId);
       }
     } catch (e: any) {
@@ -358,6 +370,8 @@ export class MapaComponent implements OnInit, OnDestroy {
           this.currentRecorridoId.set(recId2);
           const selRuta = this.rutas().find(r => r.id === ruta_id);
           if (selRuta) this.currentRecorridoRutaName.set(selRuta.nombre);
+          // Iniciar tracking del conductor para que otros clientes lo vean
+          this.startConductorTracking(recId2);
           this.startSimulatedRun(recId2);
         }
       } catch (ee) {
@@ -378,10 +392,12 @@ export class MapaComponent implements OnInit, OnDestroy {
       this.currentRecorridoId.set(null);
       this.currentRecorridoRutaName.set(null);
       this.stopLiveTracking();
+      this.stopConductorTracking();
     } catch (e) {
       console.error('Error al finalizar:', e);
       this.stopSimulatedRun();
       this.stopLiveTracking();
+      this.stopConductorTracking();
       this.currentRecorridoId.set(null);
       this.currentRecorridoRutaName.set(null);
     }
@@ -593,4 +609,101 @@ export class MapaComponent implements OnInit, OnDestroy {
     void waitAndSend();
   }
 
+  // ============================================================================
+  // Tracking de conductor (para clientes)
+  // ============================================================================
+
+  private startConductorTracking(recorrido_id: UUID): void {
+    // Si ya está activo, no reiniciar
+    if (this.conductorTrackingInterval) return;
+
+    console.log('[MapaComponent] Starting conductor tracking for recorrido:', recorrido_id);
+
+    // Cargar posición inicial
+    void this.loadConductorPosition(recorrido_id);
+
+    // Actualizar cada 2 segundos
+    this.conductorTrackingInterval = window.setInterval(() => {
+      void this.loadConductorPosition(recorrido_id);
+    }, 2000);
+  }
+
+  private stopConductorTracking(): void {
+    if (this.conductorTrackingInterval) {
+      clearInterval(this.conductorTrackingInterval);
+      this.conductorTrackingInterval = null;
+    }
+    if (this.conductorMarker) {
+      this.map?.removeLayer(this.conductorMarker);
+      this.conductorMarker = null;
+    }
+    if (this.conductorPath) {
+      this.map?.removeLayer(this.conductorPath);
+      this.conductorPath = null;
+    }
+  }
+
+  private async loadConductorPosition(recorrido_id: UUID): Promise<void> {
+    try {
+      // Obtener la posición más reciente del recorrido
+      const posiciones = await this.reco.listarPosiciones(recorrido_id);
+      
+      if (!posiciones || posiciones.length === 0) {
+        console.warn('[MapaComponent] No positions found for recorrido:', recorrido_id);
+        return;
+      }
+
+      // Obtener la última posición
+      const lastPosition = posiciones[posiciones.length - 1];
+      const lat = lastPosition.lat || lastPosition.latitude;
+      const lon = lastPosition.lon || lastPosition.longitude;
+
+      if (!lat || !lon) {
+        console.warn('[MapaComponent] Invalid position data:', lastPosition);
+        return;
+      }
+
+      console.log('[MapaComponent] Conductor position:', { lat, lon });
+
+      const L: any = (window as any).L;
+
+      // Mostrar línea del recorrido completo
+      if (!this.conductorPath && posiciones.length > 1) {
+        const coords = posiciones
+          .map((p: any) => {
+            const plat = p.lat || p.latitude;
+            const plon = p.lon || p.longitude;
+            return (plat && plon) ? [plat, plon] : null;
+          })
+          .filter((c: any) => c !== null);
+
+        if (coords.length > 1) {
+          this.conductorPath = L.polyline(coords, {
+            color: '#FF6B35',
+            weight: 3,
+            opacity: 0.7,
+            dashArray: '5, 5'
+          }).addTo(this.map!);
+        }
+      }
+
+      // Actualizar o crear marcador del conductor
+      if (this.conductorMarker) {
+        this.conductorMarker.setLatLng([lat, lon]);
+      } else {
+        const conductorIcon = L.icon({
+          iconUrl: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23FF6B35"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M6 12h12" stroke="white" stroke-width="2"/></svg>',
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+          popupAnchor: [0, -16]
+        });
+
+        this.conductorMarker = L.marker([lat, lon], { icon: conductorIcon })
+          .addTo(this.map!)
+          .bindPopup('📍 Conductor en recorrido');
+      }
+    } catch (error) {
+      console.error('[MapaComponent] Error loading conductor position:', error);
+    }
+  }
 }
