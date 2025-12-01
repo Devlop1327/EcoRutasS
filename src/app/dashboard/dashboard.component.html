@@ -1,120 +1,108 @@
 <div class="dashboard" [class.dark]="theme() === 'dark'">
-  <header class="header">
-    <div class="header-content">
-      <h1 class="logo">EcoRutas</h1>
-      <div class="user-menu">
-        @if (role()) {
-          <span class="role-badge" [attr.data-role]="role()">{{ role() | titlecase }}</span>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="profile">
+        @if (avatar()) {
+          <div class="avatar"><img src="{{ avatar() }}" alt="Avatar" class="avatar-img"/></div>
+        } @else {
+          <div class="avatar">{{ userName().charAt(0).toUpperCase() }}</div>
         }
-        <span class="user-name">{{ userName() }}</span>
-        <button class="btn-theme" (click)="toggleTheme()" [attr.aria-label]="theme() === 'dark' ? 'Cambiar a claro' : 'Cambiar a oscuro'">
-          @if (theme() === 'dark') { 🌙 } @else { ☀️ }
-        </button>
-        <button class="btn-logout" (click)="logout()">Salir</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="main">
-    <div class="hero-anim" aria-hidden="true"></div>
-    <div class="welcome">
-      <h2 class="title">{{ greeting() }}, {{ userName() }}!</h2>
-      <p class="subtitle">Bienvenido a tu panel de control de recolección</p>
-    </div>
-
-    <!-- Circular stats for Admin/overview -->
-    <div class="round-cards">
-      <div class="round-card round-veh">
-        <div class="circle"><span class="value">{{ vehiculosCount() }}</span></div>
-        <div class="label">Vehículos</div>
-      </div>
-      <div class="round-card round-rut">
-        <div class="circle"><span class="value">{{ rutasCount() }}</span></div>
-        <div class="label">Rutas</div>
-      </div>
-    </div>
-
-    @if (loading()) {
-      <div class="loading">Cargando datos...</div>
-    } @else if (error()) {
-      <div class="error-box">{{ error() }}</div>
-    } @else {
-      <div class="cards">
-        <a routerLink="/mapa" class="card card-primary card-clickable card-live">
-          <div class="live-badge"><span class="dot"></span> En vivo</div>
-          <div class="card-icon">🗺️</div>
-          <div class="card-body">
-            <h3 class="card-title">Mapa en vivo</h3>
-            <p class="card-text">Ver rutas y vehículos en tiempo real</p>
-            <div class="mini-map"><canvas #miniMap></canvas></div>
-            <div class="card-action">Ir al mapa →</div>
-          </div>
-        </a>
-
-        <div class="card">
-          <div class="card-icon">🚛</div>
-          <div class="card-body">
-            <h3 class="card-title">Vehículos activos</h3>
-            <p class="card-number">{{ vehiculosCount() }}</p>
-            <p class="card-text">En operación</p>
-            <div class="sparkline"><canvas #vehChart></canvas></div>
-          </div>
+        <div class="profile-info">
+          <div class="name">{{ userName() }}</div>
+          <div class="sub">{{ role() ? (role() | titlecase) : 'Usuario' }}</div>
         </div>
-
-        <div class="card">
-          <div class="card-icon">🛣️</div>
-          <div class="card-body">
-            <h3 class="card-title">Rutas disponibles</h3>
-            <p class="card-number">{{ rutasCount() }}</p>
-            <p class="card-text">En Buenaventura</p>
-            <div class="sparkline"><canvas #rutasChart></canvas></div>
-          </div>
-        </div>
-
-        <a routerLink="/perfil" class="card card-clickable">
-          <div class="card-icon">👤</div>
-          <div class="card-body">
-            <h3 class="card-title">Mi perfil</h3>
-            <p class="card-text">Configurar dirección y preferencias</p>
-            <div class="card-action">Ver perfil →</div>
-          </div>
-        </a>
       </div>
 
-      <div class="info-section">
-        <h3 class="section-title">Accesos rápidos</h3>
-        <div class="quick-links">
-          <a routerLink="/mapa" class="quick-link">
-            <span class="quick-link-icon-wrap">
-              <span class="link-icon">📍</span>
-            </span>
-            <div class="quick-link-content">
-              <span class="link-title">Ver mapa</span>
-              <span class="link-subtitle">Rastrea en vivo los recorridos</span>
+      <nav class="side-nav">
+        <a routerLink="/dashboard" class="nav-item active">📊 <span>Dashboard</span></a>
+        <a routerLink="/mapa" class="nav-item">🗺️ <span>Ver mapa</span></a>
+        <a routerLink="/perfil" class="nav-item">⚙️ <span>Configuración</span></a>
+        @if (role() === 'admin') {
+          <a routerLink="/admin" class="nav-item">🛠️ <span>Panel admin</span></a>
+        }
+      </nav>
+
+      <div class="side-quick">
+        <button class="btn-ghost" routerLink="/perfil">Mi perfil</button>
+        <button class="btn-logout small" (click)="logout()">Salir</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="title-block">
+          <h2 class="title">{{ greeting() }}, {{ userName() }}!</h2>
+          <p class="subtitle">Panel de control — Estado de recolección</p>
+        </div>
+        <div class="actions">
+            <button class="btn-theme" (click)="toggleTheme()">
+              <ng-container *ngIf="theme() === 'dark'; else light">🌙</ng-container>
+              <ng-template #light>☀️</ng-template>
+            </button>
+          </div>
+      </header>
+
+      <!-- Circular stats for Admin/overview -->
+      <div class="round-cards">
+        <div class="round-card round-veh">
+          <div class="circle"><span class="value">{{ vehiculosCount() }}</span></div>
+          <div class="label">Vehículos</div>
+        </div>
+        <div class="round-card round-rut">
+          <div class="circle"><span class="value">{{ rutasCount() }}</span></div>
+          <div class="label">Rutas</div>
+        </div>
+      </div>
+
+      @if (loading()) {
+        <div class="loading">Cargando datos...</div>
+      } @else if (error()) {
+        <div class="error-box">{{ error() }}</div>
+      } @else {
+        <div class="cards">
+          <a routerLink="/mapa" class="card card-primary card-clickable card-live">
+            <div class="live-badge"><span class="dot"></span> En vivo</div>
+            <div class="card-icon">🗺️</div>
+            <div class="card-body">
+              <h3 class="card-title">Mapa en vivo</h3>
+              <p class="card-text">Ver rutas y vehículos en tiempo real</p>
+              <div class="mini-map"><canvas #miniMap></canvas></div>
+              <div class="card-action">Ir al mapa →</div>
             </div>
           </a>
-          <a routerLink="/perfil" class="quick-link">
-            <span class="quick-link-icon-wrap">
-              <span class="link-icon">⚙️</span>
-            </span>
-            <div class="quick-link-content">
-              <span class="link-title">Configuración</span>
-              <span class="link-subtitle">Gestiona tu perfil y alertas</span>
+
+          <div class="card">
+            <div class="card-icon">🚛</div>
+            <div class="card-body">
+              <h3 class="card-title">Vehículos activos</h3>
+              <p class="card-number">{{ vehiculosCount() }}</p>
+              <p class="card-text">En operación</p>
+              <div class="sparkline"><canvas #vehChart></canvas></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">🛣️</div>
+            <div class="card-body">
+              <h3 class="card-title">Rutas disponibles</h3>
+              <p class="card-number">{{ rutasCount() }}</p>
+              <p class="card-text">En Buenaventura</p>
+              <div class="sparkline"><canvas #rutasChart></canvas></div>
+            </div>
+          </div>
+
+          <a routerLink="/perfil" class="card card-clickable">
+            <div class="card-icon">👤</div>
+            <div class="card-body">
+              <h3 class="card-title">Mi perfil</h3>
+              <p class="card-text">Configurar dirección y preferencias</p>
+              <div class="card-action">Ver perfil →</div>
             </div>
           </a>
-          @if (role() === 'admin') {
-            <a routerLink="/admin" class="quick-link">
-              <span class="quick-link-icon-wrap">
-                <span class="link-icon">🛠️</span>
-              </span>
-              <div class="quick-link-content">
-                <span class="link-title">Panel administrativo</span>
-                <span class="link-subtitle">Vehículos, rutas y recorridos</span>
-              </div>
-            </a>
-          }
         </div>
-      </div>
-    }
-  </main>
+
+        <!-- quick actions moved to topbar; removed duplicate quick-links without links -->
+      }
+    </main>
+  </div>
 </div>

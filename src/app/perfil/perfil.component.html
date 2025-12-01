@@ -15,6 +15,23 @@
       <p class="subtitle">Configura tu información personas</p>
     </div>
 
+    <div class="avatar-section">
+      <div class="avatar-preview">
+        @if (avatar()) {
+          <img src="{{ avatar() }}" alt="Avatar" class="avatar-img" />
+        } @else {
+          <div class="avatar-placeholder">{{ userEmail().charAt(0).toUpperCase() }}</div>
+        }
+      </div>
+      <div class="avatar-actions">
+        <label class="btn-upload">
+          Cambiar foto
+          <input type="file" accept="image/*" (change)="onFileSelected($event)" hidden />
+        </label>
+        <small class="hint">Se guardará localmente (puedes integrar Supabase Storage luego).</small>
+      </div>
+    </div>
+
     @if (message()) {
       <div class="message" [class.success]="message()!.type === 'success'" [class.error]="message()!.type === 'error'">
         {{ message()!.text }}

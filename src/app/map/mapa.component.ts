@@ -46,6 +46,10 @@ export class MapaComponent implements OnInit, OnDestroy {
   private meIcon: any | null = null;
   private posIntervalId: number | null = null;
   private lastPos: { lat: number; lon: number } | null = null;
+  private lastSentAt: number | null = null;
+  private sendingPos = false;
+  private pendingPos: { recorrido_id: UUID; lat: number; lon: number } | null = null;
+  private pendingTimer: number | null = null;
   // Variables para simulación
   private simMarker: any | null = null;
   private simTimerId: number | null = null;
@@ -425,16 +429,13 @@ export class MapaComponent implements OnInit, OnDestroy {
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
     );
 
-    // Enviar a la API cada 3 segundos si hay una última posición disponible
+    // Enviar a la API cada 5 segundos si hay una última posición disponible
     if (this.posIntervalId != null) {
       try { window.clearInterval(this.posIntervalId); } catch { }
     }
-    this.posIntervalId = window.setInterval(async () => {
+    this.posIntervalId = window.setInterval(() => {
       if (!this.lastPos) return;
-      try {
-        const perfil_id = (environment as any).profileId as UUID;
-        await this.api.registrarPosicion(recorrido_id, { lat: this.lastPos.lat, lon: this.lastPos.lon, perfil_id }).toPromise();
-      } catch { }
+      this.sendPosition(recorrido_id, this.lastPos.lat, this.lastPos.lon);
     }, 5000);
   }
 
@@ -453,6 +454,13 @@ export class MapaComponent implements OnInit, OnDestroy {
     }
     this.liveCentered = false;
     this.lastPos = null;
+    // limpiar envíos pendientes
+    if (this.pendingTimer != null) {
+      try { window.clearTimeout(this.pendingTimer); } catch {}
+      this.pendingTimer = null;
+    }
+    this.pendingPos = null;
+    this.sendingPos = false;
   }
 
   private startSimulatedRun(recorrido_id: UUID) {
@@ -480,8 +488,10 @@ export class MapaComponent implements OnInit, OnDestroy {
 
     const perfil_id = (environment as any).profileId as UUID;
     const stepMs = 100;
-    const pointDurationMs = 2000;
+    const pointDurationMs = 5000;  
     const stepsPerPoint = pointDurationMs / stepMs;
+    // enviar posiciones simuladas cada 5s
+    const sendIntervalSteps = Math.max(1, Math.round(5000 / stepMs));
     let currentStep = 0;
 
     const totalSteps = (points.length - 1) * stepsPerPoint;
@@ -522,14 +532,8 @@ export class MapaComponent implements OnInit, OnDestroy {
         this.map.panTo([lat, lng]);
       } catch { }
 
-      if (currentStep % 10 === 0) {
-        try {
-          await this.api.registrarPosicion(recorrido_id, {
-            lat,
-            lon: lng,
-            perfil_id
-          }).toPromise();
-        } catch { }
+      if (currentStep % sendIntervalSteps === 0) {
+        this.sendPosition(recorrido_id, lat, lng);
       }
 
       currentStep++;
@@ -547,6 +551,46 @@ export class MapaComponent implements OnInit, OnDestroy {
       try { this.map.removeLayer(this.simMarker); } catch { }
       this.simMarker = null;
     }
+    // limpiar envíos pendientes
+    if (this.pendingTimer != null) {
+      try { window.clearTimeout(this.pendingTimer); } catch {}
+      this.pendingTimer = null;
+    }
+    this.pendingPos = null;
+    this.sendingPos = false;
+  }
+
+  private async sendPosition(recorrido_id: UUID, lat: number, lon: number) {
+    // If already sending, keep only the latest pending position
+    this.pendingPos = { recorrido_id, lat, lon };
+    if (this.sendingPos) return;
+    // Wait until it's safe to send (throttle to ~5s)
+    const waitAndSend = async () => {
+      const now = Date.now();
+      if (this.lastSentAt && (now - this.lastSentAt) < 5000) {
+        const wait = 5000 - (now - this.lastSentAt);
+        // schedule send after remaining interval
+        if (this.pendingTimer == null) this.pendingTimer = window.setTimeout(() => { this.pendingTimer = null; void waitAndSend(); }, wait);
+        return;
+      }
+      const toSend = this.pendingPos;
+      if (!toSend) return;
+      this.pendingPos = null;
+      this.sendingPos = true;
+      try {
+        const perfil_id = (environment as any).profileId as UUID;
+        await this.api.registrarPosicion(toSend.recorrido_id, { lat: toSend.lat, lon: toSend.lon, perfil_id }).toPromise();
+        this.lastSentAt = Date.now();
+      } catch (e) {
+        // Silently ignore network errors but keep lastSentAt unchanged so retry will happen later
+        console.error('Error enviando posición', e);
+      } finally {
+        this.sendingPos = false;
+        // If another pending position accumulated, try to send it (will respect throttle)
+        if (this.pendingPos) void waitAndSend();
+      }
+    };
+    void waitAndSend();
   }
 
 }

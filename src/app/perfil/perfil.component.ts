@@ -20,6 +20,7 @@ export class PerfilComponent implements OnInit {
   saving = signal(false);
   message = signal<{ type: 'success' | 'error'; text: string } | null>(null);
   userEmail = signal<string>('');
+  avatar = signal<string | null>(null);
 
   form = this.fb.group({
     username: ['', [Validators.required, Validators.minLength(3)]],
@@ -40,6 +41,8 @@ export class PerfilComponent implements OnInit {
       return;
     }
     this.userEmail.set(user.email || '');
+    // cargar avatar desde localStorage (temporal)
+    try { this.avatar.set(localStorage.getItem('avatarDataUrl')); } catch {}
     
     // Aquí cargarías los datos del perfil desde Supabase
     // Por ahora, valores por defecto
@@ -61,6 +64,9 @@ export class PerfilComponent implements OnInit {
       
       // Aquí guardarías en Supabase tabla 'profiles' y 'user_addresses'
       await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Persistir avatar (temporal: localStorage). Si integras Supabase Storage, guarda allí.
+      try { if (this.avatar()) localStorage.setItem('avatarDataUrl', this.avatar() as string); } catch {}
 
       this.message.set({ type: 'success', text: '✅ Perfil actualizado correctamente' });
       
@@ -98,5 +104,27 @@ export class PerfilComponent implements OnInit {
         this.loading.set(false);
       }
     );
+  }
+
+  // Manejar selección de archivo de avatar
+  onFileSelected(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input?.files && input.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      this.message.set({ type: 'error', text: 'Archivo no es una imagen' });
+      setTimeout(() => this.message.set(null), 3000);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || '');
+      this.avatar.set(dataUrl);
+      try { localStorage.setItem('avatarDataUrl', dataUrl); } catch {}
+      try { window.dispatchEvent(new CustomEvent('avatar-changed')); } catch {}
+      this.message.set({ type: 'success', text: '✅ Avatar actualizado' });
+      setTimeout(() => this.message.set(null), 2000);
+    };
+    reader.readAsDataURL(file);
   }
 }

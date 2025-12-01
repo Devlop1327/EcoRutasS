@@ -19,11 +19,21 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private router = inject(Router);
 
   loading = signal(true);
-  userName = signal<string>('Usuario');
+  userName = signal<string>(this.initUserName());
+  avatar = signal<string | null>(this.initAvatar());
   rutasCount = signal(0);
   vehiculosCount = signal(0);
   error = signal<string | null>(null);
   role = this.auth.role;
+
+  private initUserName(): string {
+    const user = this.auth.getCurrentUser();
+    return user ? (user.email?.split('@')[0] || 'Usuario') : 'Usuario';
+  }
+
+  private initAvatar(): string | null {
+    try { return localStorage.getItem('avatarDataUrl'); } catch { return null; }
+  }
   theme = signal<'light' | 'dark'>((localStorage.getItem('theme') as 'light' | 'dark') || 'light');
   greeting = computed(() => {
     const h = new Date().getHours();
@@ -51,10 +61,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     try { document.documentElement.classList.toggle('dark', this.theme() === 'dark'); } catch {}
 
     window.addEventListener('keydown', this.onKey);
-    const user = this.auth.getCurrentUser();
-    if (user) {
-      this.userName.set(user.email?.split('@')[0] || 'Usuario');
-    }
 
     try {
       const [rutas, vehiculos] = await Promise.all([
@@ -90,6 +96,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         } catch {}
       }, 15000);
     }
+    // Escuchar cambios de avatar (por ejemplo cuando se actualiza en perfil)
+    try { window.addEventListener('avatar-changed', () => { this.avatar.set(localStorage.getItem('avatarDataUrl')); }); } catch {}
   }
 
   ngAfterViewInit() {
