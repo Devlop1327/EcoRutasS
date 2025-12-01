@@ -74,6 +74,8 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           source: "build.tar.gz"
           target: "/tmp"
+          timeout: "120s"
+          command_timeout: "120s"
 
       - name: Deploy en el servidor
         uses: appleboy/ssh-action@v1.2.0
@@ -82,6 +84,8 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }}
+          timeout: "120s"
+          command_timeout: "120s"
           script: |
             set -e
             mkdir -p ${{ secrets.TARGET_DIR }}
