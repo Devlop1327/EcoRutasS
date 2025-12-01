@@ -1,0 +1,82 @@
+<div class="role-selector-container">
+  @if (loading()) {
+    <div class="loading">
+      <span>Cargando roles...</span>
+    </div>
+  }
+
+  @if (!loading()) {
+    <div class="form-group">
+      <!-- Vista para ADMIN: Puede cambiar todos los roles -->
+      @if (isAdmin()) {
+        <div class="admin-view">
+          <label for="roleSelect" class="form-label">Selecciona rol de usuario</label>
+          
+          <form [formGroup]="form" class="role-form">
+            <div class="select-wrapper">
+              <select 
+                id="roleSelect" 
+                formControlName="roleId"
+                class="form-select">
+                <option value="">-- Selecciona un rol --</option>
+                @for (role of roles(); track role.id) {
+                  <option [value]="role.id">{{ role.name }}</option>
+                }
+              </select>
+            </div>
+
+            <button 
+              type="button"
+              (click)="onSave()" 
+              [disabled]="form.invalid || saving()"
+              class="btn btn-primary">
+              {{ saving() ? 'Guardando...' : 'Guardar rol' }}
+            </button>
+          </form>
+
+          @if (message(); as msg) {
+            <div [class]="'alert alert-' + (msg.type === 'success' ? 'success' : 'danger')">
+              {{ msg.text }}
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Vista para CLIENTE Y CONDUCTOR: Pueden elegir entre cliente y conductor -->
+      @if (!isAdmin()) {
+        <div class="user-view">
+          <label for="userRoleSelect" class="form-label">Elige tu rol</label>
+          
+          <form [formGroup]="form" class="role-form">
+            <div class="select-wrapper">
+              <select 
+                id="userRoleSelect" 
+                formControlName="roleId"
+                class="form-select">
+                <option value="">-- Selecciona un rol --</option>
+                @for (role of userSelectableRoles(); track role.id) {
+                  <option [value]="role.id">{{ role.name }}</option>
+                }
+              </select>
+            </div>
+
+            <button 
+              type="button"
+              (click)="onSave()" 
+              [disabled]="form.invalid || saving()"
+              class="btn btn-primary">
+              {{ saving() ? 'Guardando...' : 'Guardar rol' }}
+            </button>
+          </form>
+
+          @if (message(); as msg) {
+            <div [class]="'alert alert-' + (msg.type === 'success' ? 'success' : 'danger')">
+              {{ msg.text }}
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
+

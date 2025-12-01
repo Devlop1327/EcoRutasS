@@ -480,7 +480,6 @@ export class MapaComponent implements OnInit, OnDestroy {
   }
 
   private startSimulatedRun(recorrido_id: UUID) {
-    console.log('Iniciando simulación de recorrido');
     const L: any = (window as any).L;
     if (!L || !this.map) return;
 
@@ -514,7 +513,6 @@ export class MapaComponent implements OnInit, OnDestroy {
 
     this.simTimerId = window.setInterval(async () => {
       if (currentStep >= totalSteps) {
-        console.log('Recorrido completado');
         this.stopSimulatedRun();
 
         try {
@@ -555,7 +553,6 @@ export class MapaComponent implements OnInit, OnDestroy {
       currentStep++;
     }, stepMs);
 
-    console.log('Simulación iniciada con interpolación');
   }
 
   private stopSimulatedRun() {

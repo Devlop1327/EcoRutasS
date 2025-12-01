@@ -100,7 +100,6 @@ export class RecoleccionService {
   let currentPage = 1;
   let hasMorePages = true;
 
-  console.log('Cargando todos los vehículos');
 
   // Cargar TODAS las páginas
   while (hasMorePages) {
@@ -113,7 +112,6 @@ export class RecoleccionService {
         }
       }));
 
-      console.log(`Página ${currentPage}:`, json?.data?.length || 0, 'vehículos');
 
       const data = json?.data ?? [];
       

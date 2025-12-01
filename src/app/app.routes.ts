@@ -4,6 +4,11 @@ import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   {
+    path: 'profile-loader',
+    loadComponent: () => import('./profile-loader/profile-loader.component').then(m => m.ProfileLoaderComponent),
+    data: { preload: true }
+  },
+  {
     path: 'dashboard',
     loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
@@ -45,7 +50,7 @@ export const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'auth',
+    redirectTo: 'auth/login',
     pathMatch: 'full'
   },
   {

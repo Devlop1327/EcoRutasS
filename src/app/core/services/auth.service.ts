@@ -33,6 +33,7 @@ export class AuthService {
   isLoading = signal(true);
   error = signal<string | null>(null);
   role = signal<'cliente' | 'conductor' | 'admin' | null>(null);
+  profile = signal<any>(null); // Perfil completo desde Supabase
 
   constructor() {
     const supa = inject(SupabaseService);
@@ -194,63 +195,118 @@ export class AuthService {
     }
   }
 
+  // upsertProfile removed: keep profile loading via loadProfileRole only
+
   async loadProfileRole(userId: string): Promise<void> {
     try {
-      console.log('[AuthService] Loading profile role for user:', userId);
-      
-      // Crear un timeout de 5 segundos
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile query timeout')), 5000)
+      console.log('[AuthService] Loading profile for user:', userId);
+      // Timeout de 15 segundos para fetch del perfil
+      const timeoutPromise = new Promise<any>((resolve) =>
+        setTimeout(() => resolve(null), 15000)
       );
-      
+
+      // Seleccionar TODO el perfil (no solo role)
       const queryPromise = this.supabase
         .from('profiles')
-        .select('role')
-        .eq('id', userId);
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      // Race con timeout que resuelve a null (no rechaza)
+      const result = await Promise.race([queryPromise, timeoutPromise]) as any;
       
-      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
-      
-      console.log('[AuthService] Profile query result:', { data, error });
+      if (!result) {
+        console.log('[AuthService] Profile query timeout, defaulting to cliente');
+        this.role.set('cliente');
+        this.profile.set(null);
+        return;
+      }
+
+      const { data, error } = result;
       
       if (error) {
         console.error('[AuthService] Error loading profile role:', error);
         this.role.set('cliente');
+        this.profile.set(null);
         return;
       }
       
       if (!data || (Array.isArray(data) && data.length === 0)) {
         console.warn('[AuthService] No profile found for user:', userId);
         this.role.set('cliente');
+        this.profile.set(null);
         return;
       }
 
-      const roleValue = Array.isArray(data) ? (data[0] as any)?.role : (data as any)?.role;
-      console.log('[AuthService] Role value from DB:', roleValue);
+      const profileData = Array.isArray(data) ? data[0] : data;
+      this.profile.set(profileData);
+      console.log('[AuthService] Profile loaded:', profileData);
       
+      const roleValue = profileData?.role;
       if (roleValue && ['cliente', 'conductor', 'admin'].includes(roleValue)) {
         this.role.set(roleValue);
         console.log('[AuthService] Role set to:', roleValue);
       } else {
-        console.warn('[AuthService] Invalid role value, defaulting to cliente');
         this.role.set('cliente');
       }
-    } catch (error) {
-      console.error('[AuthService] Exception in loadProfileRole:', error);
+    } catch (error: any) {
+      console.error('[AuthService] Exception in loadProfileRole:', error?.message ?? error);
       this.role.set('cliente');
+      this.profile.set(null);
     }
   }
 
+  // Realtime subscription helpers removed to simplify and avoid runtime/typing issues
+
   async signOut(): Promise<{ error?: Error }> {
+    let signoutError: any = null;
     try {
       const { error } = await this.supabase.auth.signOut();
       if (error) throw error;
-      
-      this.currentUser.set(null);
-      this.router.navigate(['/auth/login']);
-      return {};
+      console.log('[AuthService] supabase.auth.signOut succeeded');
     } catch (error: any) {
-      console.error('Error signing out:', error);
-      return { error };
+      signoutError = error;
+      console.error('[AuthService] supabase.auth.signOut error:', error);
+    }
+
+    // Always attempt to clear client-side auth storage to avoid stale sessions
+    try {
+      this.clearClientAuthStorage();
+      console.log('[AuthService] Cleared client auth storage');
+    } catch (e) {
+      console.warn('[AuthService] Failed clearing client auth storage:', e);
+    }
+
+    // Ensure local state is cleared so UI updates immediately
+    this.currentUser.set(null);
+    this.profile.set(null);
+
+    // Navigate to login and optionally force reload to ensure server cookies (if any) are cleared
+    try {
+      this.router.navigate(['/auth/login']);
+    } catch (e) {
+      // fallback to location change
+      try { window.location.href = '/auth/login'; } catch {}
+    }
+
+    if (signoutError) return { error: signoutError };
+    return {};
+  }
+
+  private clearClientAuthStorage() {
+    try {
+      // Remove known Supabase auth keys from localStorage (keys often start with 'sb-' or include 'supabase')
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
+        if (key.startsWith('sb-') || key.toLowerCase().includes('supabase') || key.includes('auth')) {
+          keysToRemove.push(key);
+        }
+      }
+      for (const k of keysToRemove) localStorage.removeItem(k);
+    } catch (e) {
+      console.warn('[AuthService] clearClientAuthStorage failed:', e);
     }
   }
 

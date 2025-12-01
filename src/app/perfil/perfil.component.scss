@@ -5,8 +5,16 @@
 .header-content{display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto}
 .logo{font-size:1.5rem;font-weight:700;color:#059669;margin:0}
 .user-menu{display:flex;align-items:center;gap:12px}
-.btn-back{padding:6px 14px;background:transparent;color:var(--fg);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:0.85rem;text-decoration:none;transition:background 0.2s}
-.btn-back:hover{background:var(--card)}
+.btn-back{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;background:linear-gradient(135deg,#059669,#047857);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:500;text-decoration:none;transition:all 0.3s ease;box-shadow:0 2px 8px rgba(5,150,105,0.2)}
+.btn-back:hover{background:linear-gradient(135deg,#047857,#065f46);box-shadow:0 4px 16px rgba(5,150,105,0.3);transform:translateY(-2px)}
+.btn-back:active{transform:translateY(0)}
+.btn-back .icon{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;font-size:1.2rem;font-weight:700;transition:transform 0.3s ease}
+.btn-back:hover .icon{transform:translateX(-3px)}
+.btn-logout{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:500;transition:all 0.3s ease;box-shadow:0 2px 8px rgba(16,185,129,0.2)}
+.btn-logout:hover{background:linear-gradient(135deg,#059669,#047857);box-shadow:0 4px 16px rgba(16,185,129,0.3);transform:translateY(-2px)}
+.btn-logout:active{transform:translateY(0)}
+.btn-logout .icon{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;font-size:1.2rem;font-weight:700;transition:transform 0.3s ease}
+.btn-logout:hover .icon{transform:rotate(20deg)}
 .btn-logout{padding:6px 14px;background:#dc2626;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:0.85rem;transition:background 0.2s}
 .btn-logout:hover{background:#b91c1c}
 

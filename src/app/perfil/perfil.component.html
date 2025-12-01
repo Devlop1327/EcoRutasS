@@ -3,8 +3,14 @@
     <div class="header-content">
       <h1 class="logo">EcoRutas</h1>
       <div class="user-menu">
-        <a routerLink="/dashboard" class="btn-back">← Volver</a>
-        <button class="btn-logout" (click)="logout()">Salir</button>
+        <a routerLink="/dashboard" class="btn-back">
+          <span class="icon">←</span>
+          <span class="text">Volver</span>
+        </a>
+        <button class="btn-logout" (click)="logout()">
+          <span class="icon">⏻</span>
+          <span class="text">Cerrar Sesion</span>
+        </button>
       </div>
     </div>
   </header>
@@ -28,7 +34,6 @@
           Cambiar foto
           <input type="file" accept="image/*" (change)="onFileSelected($event)" hidden />
         </label>
-        <small class="hint">Se guardará localmente (puedes integrar Supabase Storage luego).</small>
       </div>
     </div>
 
@@ -101,6 +106,11 @@
             </button>
           </div>
         </div>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title">Rol de usuario</h3>
+        <app-role-selector></app-role-selector>
       </div>
 
       <div class="section">

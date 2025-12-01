@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../core/services/auth.service';
+import { RoleSelectorComponent } from './role-selector/role-selector.component';
 
 @Component({
   selector: 'app-perfil',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, RoleSelectorComponent],
   templateUrl: './perfil.component.html',
   styleUrls: ['./perfil.component.scss']
 })
@@ -61,7 +62,7 @@ export class PerfilComponent implements OnInit {
 
     try {
       const formData = this.form.getRawValue();
-      
+
       // Aquí guardarías en Supabase tabla 'profiles' y 'user_addresses'
       await new Promise(resolve => setTimeout(resolve, 1000));
 
