@@ -95,7 +95,12 @@ export class VehiculosComponent implements OnInit {
       await this.loadVehiculos();
       this.newVehiculo();
     } catch (e: any) {
-      this.error.set(e?.error?.message || 'No se pudo eliminar el vehículo');
+      // Intentar obtener el mensaje más específico del error
+      const errorMsg = e?.error?.message
+        || e?.error?.error
+        || e?.message
+        || `No se pudo eliminar el vehículo (Error ${e?.status || 'desconocido'})`;
+      this.error.set(errorMsg);
     } finally {
       this.loading.set(false);
       setTimeout(() => this.success.set(null), 2000);

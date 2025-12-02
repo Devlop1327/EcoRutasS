@@ -24,16 +24,16 @@ export const authTokenInterceptor: HttpInterceptorFn = (req, next) => {
       return next(req);
     }
 
-    // Para evitar bloqueos si no hay sesión, continuamos siempre y agregamos Accept
-    return from(auth.getSession()).pipe(
-      mergeMap(({ data }) => {
-        const token = data?.session?.access_token;
-        const headers: Record<string, string> = { 'Accept': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-        const cloned = req.clone({ setHeaders: headers });
-        return next(cloned);
-      })
-    );
+    // Usar token cacheado síncronamente para evitar bloqueos (NavigatorLockAcquireTimeoutError)
+    const token = auth.accessToken();
+    const headers: Record<string, string> = { 'Accept': 'application/json' };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const cloned = req.clone({ setHeaders: headers });
+    return next(cloned);
   } catch {
     return next(req);
   }

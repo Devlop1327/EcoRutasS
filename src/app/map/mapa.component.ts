@@ -118,7 +118,7 @@ export class MapaComponent implements OnInit, OnDestroy {
       }
       this.currentRecorridoId.set(recId || null);
       this.currentRecorridoRutaName.set(rutaName);
-      
+
       // Iniciar tracking del conductor si hay un recorrido activo
       if (recId) {
         this.startConductorTracking(recId);
@@ -472,7 +472,7 @@ export class MapaComponent implements OnInit, OnDestroy {
     this.lastPos = null;
     // limpiar envíos pendientes
     if (this.pendingTimer != null) {
-      try { window.clearTimeout(this.pendingTimer); } catch {}
+      try { window.clearTimeout(this.pendingTimer); } catch { }
       this.pendingTimer = null;
     }
     this.pendingPos = null;
@@ -489,7 +489,6 @@ export class MapaComponent implements OnInit, OnDestroy {
     this.stopSimulatedRun();
     this.simIdx = 0;
     const points = ruta.coordenadas.slice();
-    console.log(`Simulando recorrido con ${points.length} puntos`);
 
     this.simMarker = L.circleMarker(points[0], {
       radius: 8,
@@ -503,7 +502,7 @@ export class MapaComponent implements OnInit, OnDestroy {
 
     const perfil_id = (environment as any).profileId as UUID;
     const stepMs = 100;
-    const pointDurationMs = 5000;  
+    const pointDurationMs = 5000;
     const stepsPerPoint = pointDurationMs / stepMs;
     // enviar posiciones simuladas cada 5s
     const sendIntervalSteps = Math.max(1, Math.round(5000 / stepMs));
@@ -566,7 +565,7 @@ export class MapaComponent implements OnInit, OnDestroy {
     }
     // limpiar envíos pendientes
     if (this.pendingTimer != null) {
-      try { window.clearTimeout(this.pendingTimer); } catch {}
+      try { window.clearTimeout(this.pendingTimer); } catch { }
       this.pendingTimer = null;
     }
     this.pendingPos = null;
@@ -614,8 +613,6 @@ export class MapaComponent implements OnInit, OnDestroy {
     // Si ya está activo, no reiniciar
     if (this.conductorTrackingInterval) return;
 
-    console.log('[MapaComponent] Starting conductor tracking for recorrido:', recorrido_id);
-
     // Cargar posición inicial
     void this.loadConductorPosition(recorrido_id);
 
@@ -644,7 +641,7 @@ export class MapaComponent implements OnInit, OnDestroy {
     try {
       // Obtener la posición más reciente del recorrido
       const posiciones = await this.reco.listarPosiciones(recorrido_id);
-      
+
       if (!posiciones || posiciones.length === 0) {
         console.warn('[MapaComponent] No positions found for recorrido:', recorrido_id);
         return;
@@ -659,8 +656,6 @@ export class MapaComponent implements OnInit, OnDestroy {
         console.warn('[MapaComponent] Invalid position data:', lastPosition);
         return;
       }
-
-      console.log('[MapaComponent] Conductor position:', { lat, lon });
 
       const L: any = (window as any).L;
 

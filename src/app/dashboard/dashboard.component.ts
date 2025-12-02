@@ -19,17 +19,17 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private router = inject(Router);
 
   loading = signal(true);
-  userName = signal<string>(this.initUserName());
+  userName = computed(() => {
+    const user = this.auth.currentUser();
+    return user?.email?.split('@')[0] || 'Usuario';
+  });
   avatar = signal<string | null>(this.initAvatar());
   rutasCount = signal(0);
   vehiculosCount = signal(0);
   error = signal<string | null>(null);
   role = this.auth.role;
 
-  private initUserName(): string {
-    const user = this.auth.getCurrentUser();
-    return user ? (user.email?.split('@')[0] || 'Usuario') : 'Usuario';
-  }
+
 
   private initAvatar(): string | null {
     try { return localStorage.getItem('avatarDataUrl'); } catch { return null; }
@@ -58,7 +58,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.theme.set(prefersDark ? 'dark' : 'light');
     }
     // Aplicar clase global según tema actual
-    try { document.documentElement.classList.toggle('dark', this.theme() === 'dark'); } catch {}
+    try { document.documentElement.classList.toggle('dark', this.theme() === 'dark'); } catch { }
 
     window.addEventListener('keydown', this.onKey);
 
@@ -93,11 +93,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           this.pushTrend(this.rutasTrend, rc);
           this.drawAll();
           this.drawMiniMap();
-        } catch {}
+        } catch { }
       }, 15000);
     }
     // Escuchar cambios de avatar (por ejemplo cuando se actualiza en perfil)
-    try { window.addEventListener('avatar-changed', () => { this.avatar.set(localStorage.getItem('avatarDataUrl')); }); } catch {}
+    try { window.addEventListener('avatar-changed', () => { this.avatar.set(localStorage.getItem('avatarDataUrl')); }); } catch { }
   }
 
   ngAfterViewInit() {
@@ -113,7 +113,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const next = this.theme() === 'light' ? 'dark' : 'light';
     this.theme.set(next);
     localStorage.setItem('theme', next);
-    try { document.documentElement.classList.toggle('dark', next === 'dark'); } catch {}
+    try { document.documentElement.classList.toggle('dark', next === 'dark'); } catch { }
   }
 
   private makeTrend(base: number) {
@@ -191,50 +191,50 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const w = cssW, h = cssH;
 
     // Fondo y marco
-    const grd = ctx.createLinearGradient(0,0,w,h); grd.addColorStop(0,'#e0f2fe'); grd.addColorStop(1,'#f0fdf4');
-    ctx.fillStyle = grd; ctx.fillRect(0,0,w,h);
-    ctx.strokeStyle = '#d1d5db'; ctx.strokeRect(0.5,0.5,w-1,h-1);
+    const grd = ctx.createLinearGradient(0, 0, w, h); grd.addColorStop(0, '#e0f2fe'); grd.addColorStop(1, '#f0fdf4');
+    ctx.fillStyle = grd; ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = '#d1d5db'; ctx.strokeRect(0.5, 0.5, w - 1, h - 1);
 
     const rutas = this.rutasData();
     const vehs = this.vehiculosData();
-    let points: Array<{lat:number; lng:number}> = [];
-    const ruta = rutas.find(r => Array.isArray(r.coordenadas) && r.coordenadas.length>1);
+    let points: Array<{ lat: number; lng: number }> = [];
+    const ruta = rutas.find(r => Array.isArray(r.coordenadas) && r.coordenadas.length > 1);
     if (ruta) {
-      points = ruta.coordenadas.map((p: any) => ({lat: Number(p[0]), lng: Number(p[1])}));
+      points = ruta.coordenadas.map((p: any) => ({ lat: Number(p[0]), lng: Number(p[1]) }));
     }
 
     // Calcular bounds con puntos de ruta y vehículos
-    const vehPoints = (vehs || []).filter(v => v.lat!=null && v.lng!=null).map(v => ({lat:Number(v.lat), lng:Number(v.lng)}));
+    const vehPoints = (vehs || []).filter(v => v.lat != null && v.lng != null).map(v => ({ lat: Number(v.lat), lng: Number(v.lng) }));
     const allPts = points.concat(vehPoints);
     if (allPts.length >= 1) {
-      const minLat = Math.min(...allPts.map(p=>p.lat));
-      const maxLat = Math.max(...allPts.map(p=>p.lat));
-      const minLng = Math.min(...allPts.map(p=>p.lng));
-      const maxLng = Math.max(...allPts.map(p=>p.lng));
+      const minLat = Math.min(...allPts.map(p => p.lat));
+      const maxLat = Math.max(...allPts.map(p => p.lat));
+      const minLng = Math.min(...allPts.map(p => p.lng));
+      const maxLng = Math.max(...allPts.map(p => p.lng));
       const pad = 8;
-      const proj = (p:{lat:number; lng:number}) => {
-        const x = pad + ((p.lng - minLng) / ((maxLng-minLng)||1)) * (w - pad*2);
-        const y = pad + (1 - (p.lat - minLat) / ((maxLat-minLat)||1)) * (h - pad*2);
-        return {x,y};
+      const proj = (p: { lat: number; lng: number }) => {
+        const x = pad + ((p.lng - minLng) / ((maxLng - minLng) || 1)) * (w - pad * 2);
+        const y = pad + (1 - (p.lat - minLat) / ((maxLat - minLat) || 1)) * (h - pad * 2);
+        return { x, y };
       };
       // Ruta
-      if (points.length>1) {
+      if (points.length > 1) {
         ctx.strokeStyle = '#059669'; ctx.lineWidth = 2; ctx.beginPath();
-        points.forEach((p,i)=>{ const {x,y}=proj(p); if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+        points.forEach((p, i) => { const { x, y } = proj(p); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); });
         ctx.stroke();
       }
       // Vehículos
       ctx.fillStyle = '#10b981';
-      vehPoints.forEach(p=>{ const {x,y}=proj(p); ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill(); });
+      vehPoints.forEach(p => { const { x, y } = proj(p); ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill(); });
     } else {
       // Fallback estilizado en Buenaventura
-      const cx = w*0.55, cy = h*0.55;
+      const cx = w * 0.55, cy = h * 0.55;
       ctx.strokeStyle = '#059669'; ctx.lineWidth = 2; ctx.beginPath();
-      ctx.moveTo(w*0.15, h*0.75);
-      ctx.bezierCurveTo(w*0.35, h*0.55, w*0.45, h*0.85, cx, cy);
-      ctx.bezierCurveTo(w*0.7, h*0.35, w*0.85, h*0.5, w*0.9, h*0.2);
+      ctx.moveTo(w * 0.15, h * 0.75);
+      ctx.bezierCurveTo(w * 0.35, h * 0.55, w * 0.45, h * 0.85, cx, cy);
+      ctx.bezierCurveTo(w * 0.7, h * 0.35, w * 0.85, h * 0.5, w * 0.9, h * 0.2);
       ctx.stroke();
-      ctx.fillStyle = '#10b981'; ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#10b981'; ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2); ctx.fill();
     }
   }
 }

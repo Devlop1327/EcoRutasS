@@ -27,9 +27,10 @@ export class AuthService {
   private supabase: SupabaseClient;
   private router = inject(Router);
   private document = inject(DOCUMENT);
-  
+
   // Estado de autenticación
   currentUser = signal<User | null>(null);
+  accessToken = signal<string | null>(null);
   isLoading = signal(true);
   error = signal<string | null>(null);
   role = signal<'cliente' | 'conductor' | 'admin' | null>(null);
@@ -45,6 +46,7 @@ export class AuthService {
     // Escuchar cambios de autenticación
     this.supabase.auth.onAuthStateChange(async (event, session) => {
       this.currentUser.set(session?.user ?? null);
+      this.accessToken.set(session?.access_token ?? null);
       if (session?.user?.id) {
         await this.loadProfileRole(session.user.id);
       } else {
@@ -57,12 +59,13 @@ export class AuthService {
   private async checkAuth() {
     try {
       const { data: { session }, error } = await this.supabase.auth.getSession();
-      
+
       if (error) {
         throw error;
       }
-      
+
       this.currentUser.set(session?.user ?? null);
+      this.accessToken.set(session?.access_token ?? null);
       if (session?.user?.id) {
         await this.loadProfileRole(session.user.id);
       } else {
@@ -82,7 +85,7 @@ export class AuthService {
     try {
       this.isLoading.set(true);
       this.error.set(null);
-      
+
       const { data, error } = await this.supabase.auth.signInWithPassword({
         email: credentials.email,
         password: credentials.password,
@@ -91,7 +94,7 @@ export class AuthService {
       if (error) {
         throw new Error(this.getFriendlyAuthError(error));
       }
-      
+
       this.currentUser.set(data.user);
       if (data.user?.id) {
         await this.loadProfileRole(data.user.id);
@@ -111,7 +114,7 @@ export class AuthService {
     try {
       this.isLoading.set(true);
       this.error.set(null);
-      
+
       const baseHref = this.document?.baseURI || window.location.origin + '/';
       const basePath = new URL(baseHref).pathname.replace(/\/$/, '');
       const redirectTo = `${window.location.origin}${basePath}/auth/callback`;
@@ -128,7 +131,7 @@ export class AuthService {
       });
 
       if (error) throw error;
-      
+
       // No devolvemos el usuario aquí ya que la redirección de OAuth
       // manejará el flujo de autenticación
       return {};
@@ -145,7 +148,7 @@ export class AuthService {
     try {
       this.isLoading.set(true);
       this.error.set(null);
-      
+
       const baseHref = this.document?.baseURI || window.location.origin + '/';
       const basePath = new URL(baseHref).pathname.replace(/\/$/, '');
       const emailRedirectTo = `${window.location.origin}${basePath}/auth/callback`;
@@ -166,7 +169,7 @@ export class AuthService {
       if (error) {
         throw new Error(this.getFriendlyAuthError(error));
       }
-      
+
       return { user: data.user };
     } catch (error: any) {
       console.error('Error signing up:', error);
@@ -199,10 +202,9 @@ export class AuthService {
 
   async loadProfileRole(userId: string): Promise<void> {
     try {
-      console.log('[AuthService] Loading profile for user:', userId);
-      // Timeout de 15 segundos para fetch del perfil
+      // Timeout de 3 segundos para fetch del perfil
       const timeoutPromise = new Promise<any>((resolve) =>
-        setTimeout(() => resolve(null), 15000)
+        setTimeout(() => resolve(null), 3000)
       );
 
       // Seleccionar TODO el perfil (no solo role)
@@ -214,23 +216,22 @@ export class AuthService {
 
       // Race con timeout que resuelve a null (no rechaza)
       const result = await Promise.race([queryPromise, timeoutPromise]) as any;
-      
+
       if (!result) {
-        console.log('[AuthService] Profile query timeout, defaulting to cliente');
         this.role.set('cliente');
         this.profile.set(null);
         return;
       }
 
       const { data, error } = result;
-      
+
       if (error) {
         console.error('[AuthService] Error loading profile role:', error);
         this.role.set('cliente');
         this.profile.set(null);
         return;
       }
-      
+
       if (!data || (Array.isArray(data) && data.length === 0)) {
         console.warn('[AuthService] No profile found for user:', userId);
         this.role.set('cliente');
@@ -240,12 +241,10 @@ export class AuthService {
 
       const profileData = Array.isArray(data) ? data[0] : data;
       this.profile.set(profileData);
-      console.log('[AuthService] Profile loaded:', profileData);
-      
+
       const roleValue = profileData?.role;
       if (roleValue && ['cliente', 'conductor', 'admin'].includes(roleValue)) {
         this.role.set(roleValue);
-        console.log('[AuthService] Role set to:', roleValue);
       } else {
         this.role.set('cliente');
       }
@@ -263,7 +262,6 @@ export class AuthService {
     try {
       const { error } = await this.supabase.auth.signOut();
       if (error) throw error;
-      console.log('[AuthService] supabase.auth.signOut succeeded');
     } catch (error: any) {
       signoutError = error;
       console.error('[AuthService] supabase.auth.signOut error:', error);
@@ -272,7 +270,6 @@ export class AuthService {
     // Always attempt to clear client-side auth storage to avoid stale sessions
     try {
       this.clearClientAuthStorage();
-      console.log('[AuthService] Cleared client auth storage');
     } catch (e) {
       console.warn('[AuthService] Failed clearing client auth storage:', e);
     }
@@ -286,7 +283,7 @@ export class AuthService {
       this.router.navigate(['/auth/login']);
     } catch (e) {
       // fallback to location change
-      try { window.location.href = '/auth/login'; } catch {}
+      try { window.location.href = '/auth/login'; } catch { }
     }
 
     if (signoutError) return { error: signoutError };
@@ -321,7 +318,7 @@ export class AuthService {
       });
 
       if (error) throw error;
-      
+
       return {};
     } catch (error: any) {
       console.error('Error resetting password:', error);
@@ -345,7 +342,7 @@ export class AuthService {
 
   private getFriendlyAuthError(error: AuthError): string {
     if (!error) return 'Error de autenticación';
-    
+
     const errorMap: { [key: string]: string } = {
       'Invalid login credentials': 'Correo o contraseña incorrectos',
       'Email not confirmed': 'Por favor verifica tu correo electrónico',
@@ -354,7 +351,7 @@ export class AuthService {
       'Email rate limit exceeded': 'Demasiados intentos. Intenta de nuevo más tarde',
       'Network request failed': 'Error de conexión. Verifica tu conexión a internet',
     };
-    
+
     return errorMap[error.message] || error.message || 'Error de autenticación';
   }
 }

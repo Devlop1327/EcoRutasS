@@ -86,7 +86,6 @@ export class ProfileLoaderComponent implements OnInit {
       if (profile !== null) {
         // Perfil cargado (puede ser un objeto o null si no existe)
         clearInterval(checkProfile);
-        console.log('[ProfileLoader] Profile loaded, navigating to dashboard');
         this.router.navigate(['/dashboard']).catch(err => {
           console.error('[ProfileLoader] Navigation error:', err);
         });
