@@ -3,12 +3,11 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../core/services/auth.service';
-import { RoleSelectorComponent } from './role-selector/role-selector.component';
 
 @Component({
   selector: 'app-perfil',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, RoleSelectorComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './perfil.component.html',
   styleUrls: ['./perfil.component.scss']
 })
@@ -85,7 +84,7 @@ export class PerfilComponent implements OnInit {
       // Persistir avatar (temporal: localStorage). Si integras Supabase Storage, guarda allí.
       try { if (this.avatar()) localStorage.setItem('avatarDataUrl', this.avatar() as string); } catch { }
 
-      this.message.set({ type: 'success', text: '✅ Perfil actualizado correctamente' });
+      this.message.set({ type: 'success', text: 'Perfil actualizado correctamente' });
 
       setTimeout(() => this.message.set(null), 3000);
     } catch (e: any) {
@@ -112,7 +111,7 @@ export class PerfilComponent implements OnInit {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude
         });
-        this.message.set({ type: 'success', text: '📍 Ubicación obtenida' });
+        this.message.set({ type: 'success', text: 'Ubicación obtenida' });
         this.loading.set(false);
         setTimeout(() => this.message.set(null), 3000);
       },
@@ -139,7 +138,7 @@ export class PerfilComponent implements OnInit {
       this.avatar.set(dataUrl);
       try { localStorage.setItem('avatarDataUrl', dataUrl); } catch { }
       try { window.dispatchEvent(new CustomEvent('avatar-changed')); } catch { }
-      this.message.set({ type: 'success', text: '✅ Avatar actualizado' });
+      this.message.set({ type: 'success', text: 'Avatar actualizado Correctamente' });
       setTimeout(() => this.message.set(null), 2000);
     };
     reader.readAsDataURL(file);

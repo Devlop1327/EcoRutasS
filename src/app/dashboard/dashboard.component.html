@@ -36,8 +36,11 @@
         </div>
         <div class="actions">
             <button class="btn-theme" (click)="toggleTheme()">
-              <ng-container *ngIf="theme() === 'dark'; else light">🌙</ng-container>
-              <ng-template #light>☀️</ng-template>
+              @if (theme() === 'dark') {
+                <span>🌙</span>
+              } @else {
+                <span>☀️</span>
+              }
             </button>
           </div>
       </header>
