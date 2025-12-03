@@ -24,9 +24,7 @@ export const recoleccionProfileInterceptor: HttpInterceptorFn = (req, next) => {
     // ÚNICA excepción: /api/calles NO requiere perfil_id
     const skipPerfilForCalles = normalizedPath.startsWith('/api/calles');
     // Excepción para DELETE /api/vehiculos: el perfil_id va en el body, no en query params
-    const skipPerfilForDeleteVehiculos = req.method === 'DELETE' && normalizedPath.startsWith('/api/vehiculos');
-
-    if (skipPerfilForCalles || skipPerfilForDeleteVehiculos) {
+    if (skipPerfilForCalles) {
       return next(req);
     }
 

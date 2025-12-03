@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -35,16 +35,32 @@ export class PerfilComponent implements OnInit {
     notifyPush: [true]
   });
 
+  constructor() {
+    // Esperar a que el servicio de auth termine de cargar antes de verificar usuario
+    effect(() => {
+      const isLoading = this.auth.isLoading();
+      const user = this.auth.currentUser();
+
+      // Solo verificar cuando termine de cargar
+      if (!isLoading) {
+        if (!user) {
+          this.router.navigate(['/auth/login']);
+        } else {
+          this.loadUserData(user);
+        }
+      }
+    });
+  }
+
   ngOnInit() {
-    const user = this.auth.getCurrentUser();
-    if (!user) {
-      this.router.navigate(['/auth/login']);
-      return;
-    }
+    // La inicialización se maneja en el constructor via effect
+  }
+
+  private loadUserData(user: any) {
     this.userEmail.set(user.email || '');
     // cargar avatar desde localStorage (temporal)
-    try { this.avatar.set(localStorage.getItem('avatarDataUrl')); } catch {}
-    
+    try { this.avatar.set(localStorage.getItem('avatarDataUrl')); } catch { }
+
     // Aquí cargarías los datos del perfil desde Supabase
     // Por ahora, valores por defecto
     this.form.patchValue({
@@ -67,10 +83,10 @@ export class PerfilComponent implements OnInit {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Persistir avatar (temporal: localStorage). Si integras Supabase Storage, guarda allí.
-      try { if (this.avatar()) localStorage.setItem('avatarDataUrl', this.avatar() as string); } catch {}
+      try { if (this.avatar()) localStorage.setItem('avatarDataUrl', this.avatar() as string); } catch { }
 
       this.message.set({ type: 'success', text: '✅ Perfil actualizado correctamente' });
-      
+
       setTimeout(() => this.message.set(null), 3000);
     } catch (e: any) {
       this.message.set({ type: 'error', text: e?.message || 'Error al guardar' });
@@ -121,8 +137,8 @@ export class PerfilComponent implements OnInit {
     reader.onload = () => {
       const dataUrl = String(reader.result || '');
       this.avatar.set(dataUrl);
-      try { localStorage.setItem('avatarDataUrl', dataUrl); } catch {}
-      try { window.dispatchEvent(new CustomEvent('avatar-changed')); } catch {}
+      try { localStorage.setItem('avatarDataUrl', dataUrl); } catch { }
+      try { window.dispatchEvent(new CustomEvent('avatar-changed')); } catch { }
       this.message.set({ type: 'success', text: '✅ Avatar actualizado' });
       setTimeout(() => this.message.set(null), 2000);
     };
