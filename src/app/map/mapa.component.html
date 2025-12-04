@@ -64,7 +64,7 @@
     </details>
 
     <!-- Controles de conductor -->
-    <div class="controls mt" appConductorOnly [appConductorOnlyDisabledMode]="true">
+    <div class="controls mt" appConductorOnly>
       <button class="btn btn-primary" (click)="iniciarRecorrido()"
               [disabled]="!selectedRutaId() || !selectedVehiculoId() || !!currentRecorridoId() || isStarting()"
               title="Iniciar recorrido">

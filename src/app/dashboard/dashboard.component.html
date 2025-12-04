@@ -34,14 +34,14 @@
           <p class="subtitle">Panel de control — Estado de recolección</p>
         </div>
         <div class="actions">
-            <button class="btn-theme" (click)="toggleTheme()">
-              @if (theme() === 'dark') {
-                <span>🌙</span>
-              } @else {
-                <span>☀️</span>
-              }
-            </button>
-          </div>
+          <button class="btn-theme" (click)="toggleTheme()">
+            @if (theme() === 'dark') {
+              <span>🌙</span>
+            } @else {
+              <span>☀️</span>
+            }
+          </button>
+        </div>
       </header>
 
       <!-- Circular stats for Admin/overview -->
@@ -92,15 +92,6 @@
               <div class="sparkline"><canvas #rutasChart></canvas></div>
             </div>
           </div>
-
-          <a routerLink="/perfil" class="card card-clickable card-perfil">
-            <div class="card-icon">👤</div>
-            <div class="card-body">
-              <h3 class="card-title">Mi perfil</h3>
-              <p class="card-text">Configurar dirección y preferencias</p>
-              <div class="card-action">Ver perfil →</div>
-            </div>
-          </a>
         </div>
 
         <!-- quick actions moved to topbar; removed duplicate quick-links without links -->
