@@ -1,10 +1,20 @@
 <div class="admin-shell">
   <nav class="admin-nav">
-    <a routerLink="/dashboard">Dashboard</a>
-    <a routerLink="/mapa">Mapa</a>
-    <a routerLink="/admin/vehiculos">Vehículos</a>
-    <a routerLink="/admin/rutas">Rutas</a>
-    <a routerLink="/admin/calles">Calles</a>
+    <a routerLink="/dashboard" routerLinkActive="active">
+      <span class="material-symbols-rounded">dashboard</span> Dashboard
+    </a>
+    <a routerLink="/mapa" routerLinkActive="active">
+      <span class="material-symbols-rounded">map</span> Mapa
+    </a>
+    <a routerLink="/admin/vehiculos" routerLinkActive="active">
+      <span class="material-symbols-rounded">local_shipping</span> Vehículos
+    </a>
+    <a routerLink="/admin/rutas" routerLinkActive="active">
+      <span class="material-symbols-rounded">route</span> Rutas
+    </a>
+    <a routerLink="/admin/calles" routerLinkActive="active">
+      <span class="material-symbols-rounded">edit_road</span> Calles
+    </a>
   </nav>
   <main class="admin-content">
     <router-outlet></router-outlet>

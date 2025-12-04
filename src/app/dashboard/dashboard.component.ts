@@ -27,7 +27,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   rutasCount = signal(0);
   vehiculosCount = signal(0);
   error = signal<string | null>(null);
-  role = this.auth.role;
+  role = computed(() => {
+    // Esperar a que la autenticación termine de cargar antes de mostrar el rol
+    if (this.auth.isLoading()) {
+      return null;
+    }
+    return this.auth.role();
+  });
 
 
 

@@ -2,9 +2,9 @@
   <h2 class="page-title">Vehículos</h2>
 
   <section class="form-section">
-    <details class="collapsible" open>
+    <details class="collapsible">
       <summary>
-        <span class="section-title">Formulario</span>
+        <span class="section-title">Formulario de Creación de Vehículo</span>
         <span class="caret" aria-hidden>▾</span>
       </summary>
       <form class="card" [formGroup]="form" (ngSubmit)="save()">
@@ -40,45 +40,45 @@
   </section>
 
   <section class="list-section">
-    <details class="collapsible" open>
+    <details class="collapsible">
       <summary>
-        <span class="section-title">Listado</span>
+        <span class="section-title">Listado de Vehículos</span>
         <span class="count">{{ vehiculos().length }}</span>
         <span class="caret" aria-hidden>▾</span>
       </summary>
       @if (listLoading()) {
-        <div class="loading">Cargando...</div>
+      <div class="loading">Cargando...</div>
       } @else {
-        <div class="list">
-          @for (v of pagedVehiculos(); track v.id) {
-            <div class="item card">
-              <div class="item-row">
-                <div class="item-main">
-                  <div class="item-title">{{ v.placa }}</div>
-                  <div class="item-sub">Marca: {{ v.marca || '—' }} • Modelo: {{ v.modelo || '—' }}</div>
-                </div>
-                <div class="item-status">{{ v.activo === false ? 'Inactivo' : 'Activo' }}</div>
-                <div class="item-actions">
-                  <button class="icon-btn" title="Editar" (click)="editVehiculo(v)">✏️</button>
-                  <button class="icon-btn danger" title="Eliminar" (click)="deleteVehiculo(v.id)">🗑️</button>
-                </div>
-              </div>
+      <div class="list">
+        @for (v of pagedVehiculos(); track v.id) {
+        <div class="item card">
+          <div class="item-row">
+            <div class="item-main">
+              <div class="item-title">{{ v.placa }}</div>
+              <div class="item-sub">Marca: {{ v.marca || '—' }} • Modelo: {{ v.modelo || '—' }}</div>
             </div>
-          }
-          @if (vehiculos().length === 0) {
-            <div class="empty">Sin vehículos</div>
-          }
-        </div>
-        <div class="pagination">
-          <button class="btn btn-ghost" (click)="prevPage()" [disabled]="page() === 1">« Anterior</button>
-          <div class="pages">
-            @for (p of pagesWindow(); track p) {
-              <button class="page-btn" [class.active]="p === page()" (click)="gotoPage(p)">{{ p }}</button>
-            }
+            <div class="item-status">{{ v.activo === false ? 'Inactivo' : 'Activo' }}</div>
+            <div class="item-actions">
+              <button class="icon-btn" title="Editar" (click)="editVehiculo(v)">✏️</button>
+              <button class="icon-btn danger" title="Eliminar" (click)="deleteVehiculo(v.id)">🗑️</button>
+            </div>
           </div>
-          <button class="btn btn-ghost" (click)="nextPage()" [disabled]="page() === totalPages()">Siguiente »</button>
-          <div class="page-text">Pag {{ page() }} de {{ totalPages() }}</div>
         </div>
+        }
+        @if (vehiculos().length === 0) {
+        <div class="empty">Sin vehículos</div>
+        }
+      </div>
+      <div class="pagination">
+        <button class="btn btn-ghost" (click)="prevPage()" [disabled]="page() === 1">« Anterior</button>
+        <div class="pages">
+          @for (p of pagesWindow(); track p) {
+          <button class="page-btn" [class.active]="p === page()" (click)="gotoPage(p)">{{ p }}</button>
+          }
+        </div>
+        <button class="btn btn-ghost" (click)="nextPage()" [disabled]="page() === totalPages()">Siguiente »</button>
+        <div class="page-text">Pag {{ page() }} de {{ totalPages() }}</div>
+      </div>
       }
     </details>
   </section>

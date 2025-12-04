@@ -6,44 +6,46 @@
   </section>
 
   <section class="listado">
-    <details class="collapsible" open>
+    <details class="collapsible">
       <summary>
         <span class="section-title">Listado</span>
         <span class="count">{{ rutas().length }}</span>
         <span class="caret" aria-hidden>▾</span>
       </summary>
       @if (listLoading()) {
-        <div class="loading">Cargando...</div>
+      <div class="loading">Cargando...</div>
       } @else {
-        <div class="list">
-          @for (r of pagedRutas(); track r.id) {
-            <div class="item card">
-              <div class="row">
-                <div class="col">
-                  <div class="title">{{ r.nombre }}</div>
-                  <div class="subtitle">Actualizada: {{ r.updated_at || '—' }}</div>
-                </div>
-                <div class="col small actions">
-                  <a class="btn btn-ghost" [routerLink]="['/admin/rutas/editor']" [queryParams]="{ id: r.id }">Editar</a>
-                  <button class="btn btn-ghost danger" (click)="eliminar(r.id)" [disabled]="loading()">Eliminar</button>
-                </div>
-              </div>
+      <div class="list">
+        @for (r of pagedRutas(); track r.id) {
+        <div class="item card">
+          <div class="row">
+            <div class="col">
+              <div class="title">{{ r.nombre }}</div>
+              <div class="subtitle">Actualizada: {{ r.updated_at || '—' }}</div>
             </div>
-          }
-          @if (rutas().length === 0) {
-            <div class="empty">Sin rutas</div>
-          }
-        </div>
-        <div class="pagination">
-          <button class="btn btn-ghost" (click)="prevPage()" [disabled]="page() === 1">« Anterior</button>
-          <div class="pages">
-            @for (p of pagesWindow(); track p) {
-              <button class="page-btn" [class.active]="p === page()" (click)="gotoPage(p)">{{ p }}</button>
-            }
+            <div class="col small actions">
+              <button class="icon-btn" title="Editar" [routerLink]="['/admin/rutas/editor']"
+                [queryParams]="{ id: r.id }">✏️</button>
+              <button class="icon-btn danger" title="Eliminar" (click)="eliminar(r.id)"
+                [disabled]="loading()">🗑️</button>
+            </div>
           </div>
-          <button class="btn btn-ghost" (click)="nextPage()" [disabled]="page() === totalPages()">Siguiente »</button>
-          <div class="page-text">Pag {{ page() }} de {{ totalPages() }}</div>
         </div>
+        }
+        @if (rutas().length === 0) {
+        <div class="empty">Sin rutas</div>
+        }
+      </div>
+      <div class="pagination">
+        <button class="btn btn-ghost" (click)="prevPage()" [disabled]="page() === 1">« Anterior</button>
+        <div class="pages">
+          @for (p of pagesWindow(); track p) {
+          <button class="page-btn" [class.active]="p === page()" (click)="gotoPage(p)">{{ p }}</button>
+          }
+        </div>
+        <button class="btn btn-ghost" (click)="nextPage()" [disabled]="page() === totalPages()">Siguiente »</button>
+        <div class="page-text">Pag {{ page() }} de {{ totalPages() }}</div>
+      </div>
       }
     </details>
   </section>
