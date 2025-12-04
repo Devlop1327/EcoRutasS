@@ -30,6 +30,8 @@
   align-items: center;
   gap: 8px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+  /* Fix overflow */
 }
 
 .admin-nav a:hover {
@@ -51,7 +53,7 @@
 }
 
 // Responsive
-@media (max-width: 700px) {
+@media (max-width: 900px) {
   .admin-nav {
     flex-direction: column;
     gap: 10px;

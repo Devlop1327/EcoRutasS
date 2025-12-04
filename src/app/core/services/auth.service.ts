@@ -40,6 +40,12 @@ export class AuthService {
     const supa = inject(SupabaseService);
     this.supabase = supa.client;
 
+    // Inicializar rol desde caché inmediatamente para UI instantánea
+    const cachedRole = localStorage.getItem('user_role');
+    if (cachedRole && ['cliente', 'conductor', 'admin'].includes(cachedRole)) {
+      this.role.set(cachedRole as any);
+    }
+
     // Verificar sesión al cargar
     this.checkAuth();
 
@@ -51,6 +57,7 @@ export class AuthService {
         await this.loadProfileRole(session.user.id);
       } else {
         this.role.set(null);
+        localStorage.removeItem('user_role');
       }
       this.isLoading.set(false);
     });
@@ -202,24 +209,32 @@ export class AuthService {
 
   async loadProfileRole(userId: string): Promise<void> {
     try {
-      // Timeout de 3 segundos para fetch del perfil
+      // 1. Intentar cargar desde caché primero para respuesta inmediata
+      const cachedRole = localStorage.getItem('user_role');
+      if (cachedRole && ['cliente', 'conductor', 'admin'].includes(cachedRole)) {
+        this.role.set(cachedRole as any);
+      }
+
+      // Timeout de 5 segundos (reducido porque tenemos caché)
       const timeoutPromise = new Promise<any>((resolve) =>
-        setTimeout(() => resolve(null), 3000)
+        setTimeout(() => resolve(null), 5000)
       );
 
-      // Seleccionar TODO el perfil (no solo role)
+      // Seleccionar solo el rol para optimizar
       const queryPromise = this.supabase
         .from('profiles')
-        .select('*')
+        .select('role')
         .eq('id', userId)
         .maybeSingle();
 
-      // Race con timeout que resuelve a null (no rechaza)
+      // Race con timeout
       const result = await Promise.race([queryPromise, timeoutPromise]) as any;
 
       if (!result) {
-        this.role.set('cliente');
-        this.profile.set(null);
+        // Si hay timeout pero teníamos caché, mantenemos el caché
+        if (!this.role()) {
+          this.role.set('cliente');
+        }
         return;
       }
 
@@ -227,31 +242,26 @@ export class AuthService {
 
       if (error) {
         console.error('[AuthService] Error loading profile role:', error);
-        this.role.set('cliente');
-        this.profile.set(null);
+        if (!this.role()) this.role.set('cliente');
         return;
       }
 
-      if (!data || (Array.isArray(data) && data.length === 0)) {
-        console.warn('[AuthService] No profile found for user:', userId);
-        this.role.set('cliente');
-        this.profile.set(null);
+      if (!data) {
+        if (!this.role()) this.role.set('cliente');
         return;
       }
 
-      const profileData = Array.isArray(data) ? data[0] : data;
-      this.profile.set(profileData);
-
-      const roleValue = profileData?.role;
+      const roleValue = data.role;
       if (roleValue && ['cliente', 'conductor', 'admin'].includes(roleValue)) {
         this.role.set(roleValue);
+        localStorage.setItem('user_role', roleValue); // Actualizar caché
       } else {
         this.role.set('cliente');
+        localStorage.removeItem('user_role');
       }
     } catch (error: any) {
       console.error('[AuthService] Exception in loadProfileRole:', error?.message ?? error);
-      this.role.set('cliente');
-      this.profile.set(null);
+      if (!this.role()) this.role.set('cliente');
     }
   }
 
@@ -277,6 +287,8 @@ export class AuthService {
     // Ensure local state is cleared so UI updates immediately
     this.currentUser.set(null);
     this.profile.set(null);
+    this.role.set(null); // Reset role signal
+    localStorage.removeItem('user_role'); // Clear role cache
 
     // Navigate to login and optionally force reload to ensure server cookies (if any) are cleared
     try {

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RecoleccionService } from '../../core/services/recoleccion.service';
@@ -73,6 +73,8 @@ export class VehiculosComponent implements OnInit {
     this.form.reset({ placa: '', marca: '', modelo: '', activo: true });
   }
 
+  @ViewChild('formDetails') formDetails?: ElementRef<HTMLDetailsElement>;
+
   editVehiculo(v: any) {
     this.editingId.set(v.id);
     this.form.reset({
@@ -81,6 +83,12 @@ export class VehiculosComponent implements OnInit {
       modelo: v.modelo || '',
       activo: v.activo !== false
     });
+
+    // Auto-expandir y scroll al formulario
+    if (this.formDetails?.nativeElement) {
+      this.formDetails.nativeElement.open = true;
+      this.formDetails.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   async deleteVehiculo(id: string) {
