@@ -692,7 +692,7 @@ export class MapaComponent implements OnInit, OnDestroy {
 
         this.conductorMarker = L.marker([lat, lon], { icon: conductorIcon })
           .addTo(this.map!)
-          .bindPopup('📍 Conductor en recorrido');
+          .bindPopup('Conductor en recorrido');
       }
     } catch (error) {
       console.error('[MapaComponent] Error loading conductor position:', error);
