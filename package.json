@@ -1,6 +1,6 @@
 {
   "name": "eco-rutas",
-  "version": "0.0.1",
+  "version": "1.0.1",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --proxy-config proxy.conf.json",
@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@angular/build": "^20.3.5",
-    "@angular/cli": "^20.3.7",
+    "@angular/cli": "^20.3.13",
     "@angular/compiler-cli": "^20.3.0",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",

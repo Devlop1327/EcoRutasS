@@ -21,6 +21,7 @@ export class PerfilComponent implements OnInit {
   message = signal<{ type: 'success' | 'error'; text: string } | null>(null);
   userEmail = signal<string>('');
   avatar = signal<string | null>(null);
+  theme = signal<'light' | 'dark'>((localStorage.getItem('theme') as 'light' | 'dark') || 'light');
 
   form = this.fb.group({
     username: ['', [Validators.required, Validators.minLength(3)]],

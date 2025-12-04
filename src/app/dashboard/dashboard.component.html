@@ -23,7 +23,6 @@
       </nav>
 
       <div class="side-quick">
-        <button class="btn-ghost" routerLink="/perfil">Mi perfil</button>
         <button class="btn-logout small" (click)="logout()">Cerrar Sesion</button>
       </div>
     </aside>
@@ -63,7 +62,7 @@
         <div class="error-box">{{ error() }}</div>
       } @else {
         <div class="cards">
-          <a routerLink="/mapa" class="card card-primary card-clickable card-live">
+          <a routerLink="/mapa" class="card card-primary card-clickable card-live card-map">
             <div class="live-badge"><span class="dot"></span> En vivo</div>
             <div class="card-icon">🗺️</div>
             <div class="card-body">
@@ -74,7 +73,7 @@
             </div>
           </a>
 
-          <div class="card">
+          <div class="card card-vehiculos">
             <div class="card-icon">🚛</div>
             <div class="card-body">
               <h3 class="card-title">Vehículos activos</h3>
@@ -84,7 +83,7 @@
             </div>
           </div>
 
-          <div class="card">
+          <div class="card card-rutas">
             <div class="card-icon">🛣️</div>
             <div class="card-body">
               <h3 class="card-title">Rutas disponibles</h3>
@@ -94,7 +93,7 @@
             </div>
           </div>
 
-          <a routerLink="/perfil" class="card card-clickable">
+          <a routerLink="/perfil" class="card card-clickable card-perfil">
             <div class="card-icon">👤</div>
             <div class="card-body">
               <h3 class="card-title">Mi perfil</h3>
