@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, ViewChild, ElementRef } from '@angul
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RecoleccionService } from '../../core/services/recoleccion.service';
+import { AdminDataService } from '../../core/services/admin-data.service';
 import { computed } from '@angular/core';
 
 @Component({
@@ -17,6 +18,7 @@ import { computed } from '@angular/core';
 export class VehiculosComponent implements OnInit {
   private fb = inject(FormBuilder);
   private reco = inject(RecoleccionService);
+  private admin = inject(AdminDataService);
 
   loading = signal(false);
   listLoading = signal(false);
@@ -43,7 +45,7 @@ export class VehiculosComponent implements OnInit {
   });
 
   form = this.fb.nonNullable.group({
-    placa: ['', [Validators.required]],
+    placa: ['', [Validators.required, Validators.pattern('^[A-Z]{3}-[0-9]{3}$')]],
     marca: ['', [Validators.required]],
     modelo: ['', [Validators.required]],
     activo: [true]
@@ -57,15 +59,48 @@ export class VehiculosComponent implements OnInit {
     this.listLoading.set(true);
     this.error.set(null);
     try {
-      const data = await this.reco.getVehiculos();
+      let data: any[] = [];
+
+      try {
+        data = await this.admin.listVehiculos();
+      } catch {
+        data = await this.reco.getVehiculos();
+      }
+
       this.vehiculos.set(data);
-      // Ajustar página si quedó fuera de rango
       if (this.page() > this.totalPages()) this.page.set(this.totalPages());
     } catch (e: any) {
       this.error.set('No se pudieron cargar los vehículos');
     } finally {
       this.listLoading.set(false);
     }
+  }
+
+  onPlacaInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const next = this.formatPlaca(input.value);
+    input.value = next;
+    this.form.controls.placa.setValue(next, { emitEvent: false });
+  }
+
+  toUpperCaseInput(event: Event, field: 'marca' | 'modelo') {
+    const input = event.target as HTMLInputElement;
+    const next = input.value.toUpperCase();
+    input.value = next;
+    this.form.controls[field].setValue(next, { emitEvent: false });
+  }
+
+  private formatPlaca(value: string): string {
+    const cleaned = value
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .slice(0, 6);
+
+    if (cleaned.length <= 3) {
+      return cleaned;
+    }
+
+    return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}`;
   }
 
   newVehiculo() {
@@ -120,18 +155,40 @@ export class VehiculosComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const value = this.form.getRawValue(); // placa, marca, modelo, activo
+      const value = this.form.getRawValue();
+      const payload = {
+        placa: value.placa.trim(),
+        marca: value.marca.trim(),
+        modelo: value.modelo.trim(),
+        activo: Boolean(value.activo),
+      };
+      const supabasePayload = {
+        placa: value.placa.trim(),
+        marca: value.marca.trim(),
+        modelo: value.modelo.trim(),
+        activo: Boolean(value.activo),
+      };
+
       if (this.editingId()) {
-        await this.reco.updateVehiculo(this.editingId()!, value);
+        try {
+          await this.admin.updateVehiculo(this.editingId()!, supabasePayload as any);
+        } catch {
+          await this.reco.updateVehiculo(this.editingId()!, payload);
+        }
         this.success.set('Vehículo actualizado');
       } else {
-        await this.reco.crearVehiculo(value);
+        try {
+          await this.admin.createVehiculo(supabasePayload as any);
+        } catch {
+          await this.reco.crearVehiculo(payload);
+        }
         this.success.set('Vehículo creado');
       }
+
       await this.loadVehiculos();
       this.newVehiculo();
     } catch (e: any) {
-      this.error.set(e?.error?.message || 'No se pudo guardar el vehículo');
+      this.error.set(e?.error?.message || e?.message || 'No se pudo guardar el vehículo');
     } finally {
       this.loading.set(false);
       setTimeout(() => this.success.set(null), 2000);

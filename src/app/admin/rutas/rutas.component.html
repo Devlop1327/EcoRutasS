@@ -2,7 +2,10 @@
   <h2 class="page-title">Rutas</h2>
 
   <section class="actions">
-    <a class="btn btn-primary" routerLink="/admin/rutas/editor">🗺️ Crear desde mapa</a>
+    <a class="btn btn-primary" routerLink="/admin/rutas/editor">
+      <i class="bi bi-map-fill"></i>
+      <span>Crear desde mapa</span>
+    </a>
   </section>
 
   <section class="listado">
@@ -20,14 +23,18 @@
         <div class="item card">
           <div class="row">
             <div class="col">
-              <div class="title">{{ r.nombre }}</div>
+              <div class="title">{{ (r.nombre || '').toUpperCase() }}</div>
               <div class="subtitle">Actualizada: {{ r.updated_at || '—' }}</div>
             </div>
             <div class="col small actions">
               <button class="icon-btn" title="Editar" [routerLink]="['/admin/rutas/editor']"
-                [queryParams]="{ id: r.id }">✏️</button>
+                [queryParams]="{ id: r.id }">
+                <i class="bi bi-pencil-square"></i>
+              </button>
               <button class="icon-btn danger" title="Eliminar" (click)="eliminar(r.id)"
-                [disabled]="loading()">🗑️</button>
+                [disabled]="loading()">
+                <i class="bi bi-trash"></i>
+              </button>
             </div>
           </div>
         </div>

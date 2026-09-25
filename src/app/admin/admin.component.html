@@ -1,22 +1,40 @@
 <div class="admin-shell">
-  <nav class="admin-nav">
-    <a routerLink="/dashboard" routerLinkActive="active">
-      <span class="material-symbols-rounded">dashboard</span> Dashboard
-    </a>
-    <a routerLink="/mapa" routerLinkActive="active">
-      <span class="material-symbols-rounded">map</span> Mapa
-    </a>
-    <a routerLink="/admin/vehiculos" routerLinkActive="active">
-      <span class="material-symbols-rounded">local_shipping</span> Vehículos
-    </a>
-    <a routerLink="/admin/rutas" routerLinkActive="active">
-      <span class="material-symbols-rounded">route</span> Rutas
-    </a>
-    <a routerLink="/admin/calles" routerLinkActive="active">
-      <span class="material-symbols-rounded">edit_road</span> Calles
-    </a>
-  </nav>
-  <main class="admin-content">
-    <router-outlet></router-outlet>
-  </main>
+  <div class="admin-panel">
+    <header class="admin-topbar">
+      <div class="brand-wrap">
+        <div class="brand-mark">E</div>
+        <div class="brand-copy">
+          <span class="eyebrow">Administración</span>
+          <strong>EcoRutas</strong>
+        </div>
+      </div>
+
+      <nav class="admin-nav" aria-label="Navegación administrativa">
+        <a routerLink="/dashboard" routerLinkActive="active">
+          <i class="bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+        <a routerLink="/mapa" routerLinkActive="active">
+          <i class="bi bi-map"></i>
+          <span>Mapa</span>
+        </a>
+        <a routerLink="/admin/vehiculos" routerLinkActive="active">
+          <i class="bi bi-truck"></i>
+          <span>Vehículos</span>
+        </a>
+        <a routerLink="/admin/rutas" routerLinkActive="active">
+          <i class="bi bi-signpost-2"></i>
+          <span>Rutas</span>
+        </a>
+        <a routerLink="/admin/calles" routerLinkActive="active">
+          <i class="bi bi-road"></i>
+          <span>Calles</span>
+        </a>
+      </nav>
+    </header>
+
+    <main class="admin-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
 </div>

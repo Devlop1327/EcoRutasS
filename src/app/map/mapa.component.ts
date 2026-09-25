@@ -27,7 +27,7 @@ export class MapaComponent implements OnInit, OnDestroy {
   loading = signal(true);
   error = signal<string | null>(null);
   rutas = signal<Array<{ id: string; nombre: string; coordenadas?: Array<[number, number]>; source?: 'api' | 'supa'; ext_id?: string | null }>>([]);
-  vehiculos = signal<Array<{ id: string; placa?: string; lat?: number; lng?: number }>>([]);
+  vehiculos = signal<Array<{ id: string; placa?: string; marca?: string; modelo?: string; lat?: number; lng?: number }>>([]);
 
   // Selección para iniciar/finalizar (solo conductor)
   selectedRutaId = signal<UUID | null>(null);
@@ -35,6 +35,7 @@ export class MapaComponent implements OnInit, OnDestroy {
   currentRecorridoId = signal<UUID | null>(null);
   currentRecorridoRutaName = signal<string | null>(null);
   isStarting = signal(false);
+  sidebarOpen = signal(true);
 
   private leafletLoaded = false;
   private map: any | null = null;
@@ -187,12 +188,35 @@ export class MapaComponent implements OnInit, OnDestroy {
     }
   }
 
+  toggleSidebar() {
+    this.sidebarOpen.update(value => !value);
+  }
+
   private async loadVehiculos() {
     try {
-      const vehiculos = await this.reco.getVehiculos();
-      this.vehiculos.set(vehiculos);
+      const supaVehiculos = await this.admin.listVehiculos().catch(() => [] as any[]);
+      const fallbackVehiculos = await this.reco.getVehiculos().catch(() => [] as any[]);
+
+      const merged = [...(supaVehiculos || [])];
+      const seen = new Set((merged as any[]).map(v => String(v.id ?? v.placa ?? '')));
+
+      for (const v of fallbackVehiculos || []) {
+        const key = String(v.id ?? v.placa ?? '');
+        if (!key || seen.has(key)) continue;
+        merged.push(v);
+      }
+
+      this.vehiculos.set((merged || []).map((v: any) => ({
+        id: String(v.id ?? v.ext_id ?? v.codigo ?? ''),
+        placa: v.placa ?? v.plate ?? undefined,
+        marca: v.marca ?? v.brand ?? undefined,
+        modelo: v.modelo ?? v.model ?? undefined,
+        lat: v.lat ?? v.latitude ?? v.latitud ?? undefined,
+        lng: v.lng ?? v.longitude ?? v.longitud ?? undefined
+      })).filter((v) => !!v.id || !!v.placa));
     } catch (e: any) {
       console.error('Error cargando vehículos:', e);
+      this.vehiculos.set([]);
     }
   }
 

@@ -1,88 +1,97 @@
 <div class="map-layout">
-  <aside class="side">
-    <a class="back-btn" routerLink="/dashboard" aria-label="Volver al dashboard" title="Volver">
-      <mat-icon class="material-symbols-rounded">arrow_back</mat-icon>
-    </a>
-    <details class="collapsible" open>
-      <summary>
-        <span class="title">Rutas disponibles</span>
-        <span class="count">{{ rutas().length }}</span>
-        <span class="caret" aria-hidden>▾</span>
-      </summary>
-      @if (loading()) {
-        <div class="muted">Cargando rutas...</div>
-      } @else if (error()) {
-        <div class="error">{{ error() }}</div>
-      } @else {
-        <div class="card">
-          <ul class="list">
-            @for (r of rutas(); track r.id) {
-              <li class="item"
-                  [class.selected]="selectedRutaId() === r.id"
-                  (click)="selectRuta(r.id)"
-                  title="Seleccionar ruta">
-                <span class="dot route"></span>
-                <span class="text">{{ r.nombre }}</span>
-                <span class="chev">›</span>
-              </li>
-            }
-            @if (rutas().length === 0) {
-              <li class="muted">Sin rutas</li>
-            }
-          </ul>
-        </div>
-      }
-    </details>
-
-    <details class="collapsible mt" open appConductorOnly>
-      <summary>
-        <span class="title">Vehículos</span>
-        <span class="count">{{ vehiculos().length }}</span>
-        <span class="caret" aria-hidden>▾</span>
-      </summary>
-      @if (loading()) {
-        <div class="muted">Cargando...</div>
-      } @else {
-        <div class="card">
-          <ul class="list">
-            @for (v of vehiculos(); track v.id) {
-              <li class="item vehicle"
-                  [class.selected]="selectedVehiculoId() === v.id"
-                  (click)="selectVehiculo(v.id)"
-                  title="Seleccionar vehículo">
-                <span class="icon">🚛</span>
-                <span class="text">{{ v.placa || v.id }}</span>
-                <span class="chev">›</span>
-              </li>
-            }
-            @if (vehiculos().length === 0) {
-              <li class="muted">Sin vehículos</li>
-            }
-          </ul>
-        </div>
-      }
-    </details>
-
-    <!-- Controles de conductor -->
-    <div class="controls mt" appConductorOnly>
-      <button class="btn btn-primary" (click)="iniciarRecorrido()"
-              [disabled]="!selectedRutaId() || !selectedVehiculoId() || !!currentRecorridoId() || isStarting()"
-              title="Iniciar recorrido">
-        <span class="btn-icon">▶</span>
-        <span>Iniciar Recorrido</span>
+  <aside class="side" [class.collapsed]="!sidebarOpen()">
+    <div class="side-header">
+      <button class="sidebar-toggle" type="button" (click)="toggleSidebar()" aria-label="Abrir o cerrar menú">
+        <i class="bi bi-list"></i>
       </button>
-      <button class="btn btn-danger" (click)="finalizarRecorrido()"
-              [disabled]="!currentRecorridoId()"
-              title="Finalizar recorrido">
-        <span class="btn-icon">■</span>
-        <span>Finalizar</span>
-      </button>
-      @if (currentRecorridoId()) {
-        <div class="muted small status">
-          Ruta en recorrido: <strong>{{ currentRecorridoRutaName() || '—' }}</strong>
-        </div>
+      @if (sidebarOpen()) {
+        <a class="back-btn" routerLink="/dashboard" aria-label="Volver al dashboard" title="Volver">
+          <i class="bi bi-arrow-left"></i>
+        </a>
       }
     </div>
+
+    @if (sidebarOpen()) {
+      <details class="collapsible" open>
+        <summary>
+          <span class="title">Rutas disponibles</span>
+          <span class="count">{{ rutas().length }}</span>
+          <span class="caret" aria-hidden>▾</span>
+        </summary>
+        @if (loading()) {
+          <div class="muted">Cargando rutas...</div>
+        } @else if (error()) {
+          <div class="error">{{ error() }}</div>
+        } @else {
+          <div class="card">
+            <ul class="list">
+              @for (r of rutas(); track r.id) {
+                <li class="item"
+                    [class.selected]="selectedRutaId() === r.id"
+                    (click)="selectRuta(r.id)"
+                    title="Seleccionar ruta">
+                  <span class="dot route"></span>
+                  <span class="text">{{ r.nombre }}</span>
+                  <span class="chev"><i class="bi bi-chevron-right"></i></span>
+                </li>
+              }
+              @if (rutas().length === 0) {
+                <li class="muted">Sin rutas</li>
+              }
+            </ul>
+          </div>
+        }
+      </details>
+
+      <details class="collapsible mt" open appConductorOnly>
+        <summary>
+          <span class="title">Vehículos</span>
+          <span class="count">{{ vehiculos().length }}</span>
+          <span class="caret" aria-hidden>▾</span>
+        </summary>
+        @if (loading()) {
+          <div class="muted">Cargando...</div>
+        } @else {
+          <div class="card">
+            <ul class="list">
+              @for (v of vehiculos(); track v.id) {
+                <li class="item vehicle"
+                    [class.selected]="selectedVehiculoId() === v.id"
+                    (click)="selectVehiculo(v.id)"
+                    title="Seleccionar vehículo">
+                  <span class="icon"><i class="bi bi-truck"></i></span>
+                  <span class="text">{{ v.placa || v.id }}</span>
+                  <span class="chev"><i class="bi bi-chevron-right"></i></span>
+                </li>
+              }
+              @if (vehiculos().length === 0) {
+                <li class="muted">Sin vehículos</li>
+              }
+            </ul>
+          </div>
+        }
+      </details>
+
+      <div class="controls mt" appConductorOnly>
+        <button class="btn btn-primary" (click)="iniciarRecorrido()"
+                [disabled]="!selectedRutaId() || !selectedVehiculoId() || !!currentRecorridoId() || isStarting()"
+                title="Iniciar recorrido">
+          <span class="btn-icon"><i class="bi bi-play-fill"></i></span>
+          <span>Iniciar Recorrido</span>
+        </button>
+        <button class="btn btn-danger" (click)="finalizarRecorrido()"
+                [disabled]="!currentRecorridoId()"
+                title="Finalizar recorrido">
+          <span class="btn-icon"><i class="bi bi-stop-fill"></i></span>
+          <span>Finalizar</span>
+        </button>
+        @if (currentRecorridoId()) {
+          <div class="muted small status">
+            Ruta en recorrido: <strong>{{ currentRecorridoRutaName() || '—' }}</strong>
+          </div>
+        }
+      </div>
+    }
   </aside>
   <section class="map-wrap">
     <div id="map" class="map"></div>

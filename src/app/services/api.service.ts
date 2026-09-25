@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { of } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 // Tipos
@@ -52,8 +53,12 @@ export interface RecorridoFinalizarBody {
 
 function baseUrl(): string {
   const api = (environment as any).recoleccionApiUrl?.replace(/\/$/, '') || '';
-  const proxy = (environment as any).recoleccionApiProxy || '/recoleccion';
-  // Usa proxy SOLO en desarrollo
+  const proxy = (environment as any).recoleccionApiProxy || '';
+
+  // Modo local por defecto: si no hay backend configurado, no se hace ninguna llamada externa.
+  if (!api && !proxy) return '';
+
+  // Usa proxy SOLO en desarrollo cuando haya una URL configurada explícitamente.
   if (!environment.production && proxy) return `${proxy}/api`;
   return `${api}/api`;
 }
@@ -69,8 +74,16 @@ export class ApiService {
   private http = inject(HttpClient);
   private API = baseUrl();
 
+  private localResponse<T>(payload: T) {
+    return of({ ok: true, status: 200, body: payload } as any);
+  }
+
   // 1) Vehículos
   postVehiculo(body: VehiculoCreate) {
+    if (!this.API) {
+      return this.localResponse({ id: `veh-${Date.now()}`, ...body });
+    }
+
     return this.http.post(`${this.API}/vehiculos`, body, {
       headers: defaultHeaders(),
       observe: 'response'
@@ -79,6 +92,10 @@ export class ApiService {
 
   // 2) Rutas
   postRuta(body: RutaCreate) {
+    if (!this.API) {
+      return this.localResponse({ id: `ruta-${Date.now()}`, ...body });
+    }
+
     return this.http.post(`${this.API}/rutas`, body, {
       headers: defaultHeaders(),
       observe: 'response'
@@ -87,6 +104,10 @@ export class ApiService {
 
   // 3.1) Iniciar recorrido
   iniciarRecorrido(body: RecorridoIniciar) {
+    if (!this.API) {
+      return this.localResponse({ id: `recorrido-${Date.now()}`, ...body });
+    }
+
     return this.http.post(`${this.API}/recorridos/iniciar`, body, {
       headers: defaultHeaders(),
       observe: 'response'
@@ -95,6 +116,10 @@ export class ApiService {
 
   // 3.2) Registrar posición
   registrarPosicion(recorrido_id: UUID, body: PosicionCreate) {
+    if (!this.API) {
+      return this.localResponse({ recorrido_id, ...body, ok: true });
+    }
+
     return this.http.post(`${this.API}/recorridos/${recorrido_id}/posiciones`, body, {
       headers: defaultHeaders(),
       observe: 'response'
@@ -103,6 +128,10 @@ export class ApiService {
 
   finalizarRecorrido(recorrido_id: UUID, perfil_id: UUID) {
     const body: RecorridoFinalizarBody = { perfil_id };
+    if (!this.API) {
+      return this.localResponse({ recorrido_id, ...body, ok: true });
+    }
+
     return this.http.post(`${this.API}/recorridos/${recorrido_id}/finalizar`, body, {
       headers: defaultHeaders(),
       observe: 'response'

@@ -1,101 +1,543 @@
-<div class="dashboard" [class.dark]="theme() === 'dark'">
-  <div class="layout">
-    <aside class="sidebar">
-      <div class="profile">
-        @if (avatar()) {
-          <div class="avatar"><img src="{{ avatar() }}" alt="Avatar" class="avatar-img"/></div>
-        } @else {
-          <div class="avatar">{{ userName().charAt(0).toUpperCase() }}</div>
-        }
-        <div class="profile-info">
-          <div class="name">{{ userName() }}</div>
-          <div class="sub">{{ role() ? (role() | titlecase) : 'Usuario' }}</div>
-        </div>
-      </div>
-
-      <nav class="side-nav">
-        <a routerLink="/dashboard" class="nav-item active">📊 <span>Dashboard</span></a>
-        <a routerLink="/mapa" class="nav-item">🗺️ <span>Ver mapa</span></a>
-        <a routerLink="/perfil" class="nav-item">⚙️ <span>Configuración</span></a>
-        @if (role() === 'admin') {
-          <a routerLink="/admin" class="nav-item">🛠️ <span>Panel admin</span></a>
-        }
-      </nav>
-
-      <div class="side-quick">
-        <button class="btn-logout small" (click)="logout()">Cerrar Sesion</button>
-      </div>
-    </aside>
-
-    <main class="main">
-      <header class="topbar">
-        <div class="title-block">
-          <h2 class="title">{{ greeting() }}, {{ userName() }}!</h2>
-          <p class="subtitle">Panel de control — Estado de recolección</p>
-        </div>
-        <div class="actions">
-          <button class="btn-theme" (click)="toggleTheme()">
-            @if (theme() === 'dark') {
-              <span>🌙</span>
-            } @else {
-              <span>☀️</span>
-            }
+@if (isAdmin()) {
+  <div class="dashboard" [class.dark]="theme() === 'dark'">
+    <div class="dashboard-shell" [class.sidebar-collapsed]="!sidebarOpen()">
+      <aside class="sidebar-panel" [class.collapsed]="!sidebarOpen()">
+        <div class="brand-row">
+          @if (sidebarOpen()) {
+            <div class="brand-mark">E</div>
+            <div class="brand-name">Eco-Rutas</div>
+          }
+          <button class="sidebar-toggle" type="button" (click)="toggleSidebar()" aria-label="Abrir o cerrar menú">
+            <i class="bi bi-list"></i>
           </button>
+        </div>
+
+        <nav class="side-nav" aria-label="Navegación principal">
+          <a routerLink="/dashboard" class="nav-link active">
+            <span class="nav-ico"><i class="bi bi-speedometer2"></i></span>
+            @if (sidebarOpen()) { <span class="nav-label">Dashboard</span> }
+          </a>
+          <a routerLink="/mapa" class="nav-link">
+            <span class="nav-ico"><i class="bi bi-map"></i></span>
+            @if (sidebarOpen()) { <span class="nav-label">Ver mapa</span> }
+          </a>
+          <a routerLink="/perfil" class="nav-link">
+            <span class="nav-ico"><i class="bi bi-person"></i></span>
+            @if (sidebarOpen()) { <span class="nav-label">Perfil</span> }
+          </a>
+          <a routerLink="/admin" class="nav-link">
+            <span class="nav-ico"><i class="bi bi-sliders"></i></span>
+            @if (sidebarOpen()) { <span class="nav-label">Panel admin</span> }
+          </a>
+        </nav>
+
+        @if (sidebarOpen()) {
+          <div class="sidebar-cta">
+            <div class="cta-pill">Operación</div>
+            <div class="cta-copy">Panel operativo activo</div>
+            <button class="cta-button" (click)="logout()">Cerrar sesión</button>
+          </div>
+        }
+      </aside>
+
+      <main class="main-panel">
+        <header class="main-header">
+          <div class="header-left">
+            <div class="window-links">
+              <span class="window-link"></span>
+              <span class="window-link"></span>
+              <span class="window-link"></span>
+            </div>
+            <div class="search-box">
+              <span class="search-icon"><i class="bi bi-search"></i></span>
+              <span>Buscar ruta o vehículo...</span>
+              <kbd><i class="bi bi-command"></i></kbd>
+            </div>
+          </div>
+
+          <div class="header-tools">
+            <button class="tool-button" aria-label="Tema" (click)="toggleTheme()"><i class="bi bi-brightness-high"></i></button>
+            <button class="tool-button" aria-label="Notificaciones"><i class="bi bi-bell"></i></button>
+            <button class="tool-button avatar-button" aria-label="Perfil">
+              @if (avatar()) {
+                <img [src]="avatar()" alt="Avatar" />
+              } @else {
+                <span>{{ userName().charAt(0).toUpperCase() }}</span>
+              }
+            </button>
+          </div>
+        </header>
+
+        <div class="panel-body">
+          <div class="page-toolbar">
+            <h1>{{ greeting() }}, {{ userName() }}!</h1>
+
+            <div class="toolbar-actions">
+              <button class="ghost-btn">Hoy · panel operativo</button>
+              <button class="ghost-btn">Acciones</button>
+              <button class="primary-btn" (click)="logout()">Cerrar sesión</button>
+            </div>
+          </div>
+
+          <div class="metrics-grid">
+            <article class="metric-card">
+              <div class="metric-head">
+                <span class="metric-label">Vehículos</span>
+                <span class="metric-trend up">+12.5%</span>
+              </div>
+              <div class="metric-value">{{ vehiculosCount() }}</div>
+              <div class="metric-meta">Activos hoy</div>
+              <div class="sparkline"><canvas #adminVehChart></canvas></div>
+            </article>
+
+            <article class="metric-card">
+              <div class="metric-head">
+                <span class="metric-label">Rutas</span>
+                <span class="metric-trend up">+8.1%</span>
+              </div>
+              <div class="metric-value">{{ rutasCount() }}</div>
+              <div class="metric-meta">Disponibles</div>
+              <div class="sparkline"><canvas #adminRutasChart></canvas></div>
+            </article>
+
+            <article class="metric-card">
+              <div class="metric-head">
+                <span class="metric-label">Cobertura</span>
+                <span class="metric-trend up">+3%</span>
+              </div>
+              <div class="metric-value">{{ summaryStats[0].value }}</div>
+              <div class="metric-meta">Operación actual</div>
+              <div class="sparkline"><canvas></canvas></div>
+            </article>
+
+            <article class="metric-card">
+              <div class="metric-head">
+                <span class="metric-label">Alertas</span>
+                <span class="metric-trend down">{{ alerts.length }}</span>
+              </div>
+              <div class="metric-value">{{ alerts.length }}</div>
+              <div class="metric-meta">Pendientes</div>
+              <div class="sparkline"><canvas></canvas></div>
+            </article>
+          </div>
+
+          <div class="analytics-grid">
+            <section class="chart-card">
+              <div class="section-head">
+                <h2>Resumen operativo</h2>
+                <span class="mini-badge">{{ summaryStats[0].value }}</span>
+              </div>
+
+              <div class="profit-value">{{ summaryStats[0].value }}</div>
+              <div class="profit-delta">+24.4%</div>
+
+              <div class="line-chart" aria-label="Gráfico de rendimiento operativo">
+                <canvas #adminMiniMap></canvas>
+              </div>
+
+              <div class="mini-stats">
+                @for (stat of summaryStats; track stat.label) {
+                  <div class="mini-stat" [class.green]="stat.tone === 'emerald'" [class.orange]="stat.tone === 'amber'">
+                    <div class="mini-stat-icon"><i [class]="stat.icon"></i></div>
+                    <div>
+                      <div class="mini-stat-value">{{ stat.value }}</div>
+                      <div class="mini-stat-label">{{ stat.label }}</div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </section>
+
+            <aside class="side-stack">
+              <article class="mini-card">
+                <div class="section-head compact">
+                  <h2>Actividad diaria</h2>
+                  <span class="dots">•••</span>
+                </div>
+                <div class="bar-activity">
+                  <div class="bars">
+                    <span class="bar" style="height: 40%;"></span>
+                    <span class="bar" style="height: 52%;"></span>
+                    <span class="bar" style="height: 58%;"></span>
+                    <span class="bar" style="height: 70%;"></span>
+                    <span class="bar" style="height: 80%;"></span>
+                    <span class="bar active" style="height: 100%;"></span>
+                    <span class="bar" style="height: 62%;"></span>
+                  </div>
+                  <div class="bar-labels">
+                    <span>Dom</span>
+                    <span>Lun</span>
+                    <span>Mar</span>
+                    <span>Mié</span>
+                    <span>Jue</span>
+                    <span>Vie</span>
+                    <span>Sáb</span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="mini-card">
+                <div class="section-head compact">
+                  <h2>Tasa de cumplimiento</h2>
+                  <span class="dots">•••</span>
+                </div>
+
+                <div class="ring-wrap">
+                  <div class="donut">
+                    <div class="donut-inner">
+                      <strong>92%</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="ring-caption">Meta semanal: 90%</div>
+                <button class="show-details">Ver detalle</button>
+              </article>
+            </aside>
+          </div>
+
+          <section class="products-card">
+            <div class="section-head products-head">
+              <h2>Rutas recientes</h2>
+              <span class="dots">•••</span>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Ruta</th>
+                  <th>Estado</th>
+                  <th>Vehículos</th>
+                  <th>Hora</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (route of recentRoutes; track route.name) {
+                  <tr>
+                    <td class="product-cell">
+                      <span class="product-badge">◧</span>
+                      <span>{{ route.name }}</span>
+                    </td>
+                    <td>{{ route.status }}</td>
+                    <td>{{ route.vehicles }}</td>
+                    <td class="rating positive">{{ route.time }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+} @else if (isConductor()) {
+  <div class="dashboard driver-dashboard" [class.dark]="theme() === 'dark'">
+    <div class="driver-shell">
+      <header class="driver-topbar">
+        <div class="brand-block">
+          <div class="brand-mark">E</div>
+          <div class="brand-copy">
+            <span class="brand-kicker">EcoRutas</span>
+            <h1>{{ greeting() }}, {{ userName() }}!</h1>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <button class="chip" type="button">
+            <i class="bi bi-clipboard2-check"></i>
+            <span>Turno activo</span>
+          </button>
+          <button class="chip secondary" type="button" (click)="toggleTheme()">
+            <i class="bi bi-brightness-high"></i>
+            <span>Tema</span>
+          </button>
+          <button class="primary-btn" type="button" (click)="logout()">Cerrar sesión</button>
         </div>
       </header>
 
-      <!-- Circular stats for Admin/overview -->
-      <div class="round-cards">
-        <div class="round-card round-veh">
-          <div class="circle"><span class="value">{{ vehiculosCount() }}</span></div>
-          <div class="label">Vehículos</div>
-        </div>
-        <div class="round-card round-rut">
-          <div class="circle"><span class="value">{{ rutasCount() }}</span></div>
-          <div class="label">Rutas</div>
-        </div>
-      </div>
-
-      @if (loading()) {
-        <div class="loading">Cargando datos...</div>
-      } @else if (error()) {
-        <div class="error-box">{{ error() }}</div>
-      } @else {
-        <div class="cards">
-          <a routerLink="/mapa" class="card card-primary card-clickable card-live card-map">
-            <div class="live-badge"><span class="dot"></span> En vivo</div>
-            <div class="card-icon">🗺️</div>
-            <div class="card-body">
-              <h3 class="card-title">Mapa en vivo</h3>
-              <p class="card-text">Ver rutas y vehículos en tiempo real</p>
-              <div class="mini-map"><canvas #miniMap></canvas></div>
-              <div class="card-action">Ir al mapa →</div>
+      <section class="driver-overview">
+        <article class="driver-panel large-panel">
+          <div class="panel-header">
+            <span class="eyebrow">Ruta asignada</span>
+            <span class="small-pill success">En servicio</span>
+          </div>
+          <h2>{{ recentRoutes[0]?.name || 'Ruta principal' }}</h2>
+          <div class="driver-meta">
+            <span><i class="bi bi-clock-history"></i> {{ recentRoutes[0]?.time || '08:30' }}</span>
+            <span><i class="bi bi-geo-alt"></i> {{ rutasCount() }} rutas</span>
+          </div>
+          <div class="route-legend">
+            <div>
+              <strong>{{ vehiculosCount() }}</strong>
+              <small>vehículos</small>
             </div>
-          </a>
-
-          <div class="card card-vehiculos">
-            <div class="card-icon">🚛</div>
-            <div class="card-body">
-              <h3 class="card-title">Vehículos activos</h3>
-              <p class="card-number">{{ vehiculosCount() }}</p>
-              <p class="card-text">En operación</p>
-              <div class="sparkline"><canvas #vehChart></canvas></div>
+            <div>
+              <strong>{{ summaryStats[0].value }}</strong>
+              <small>cobertura</small>
+            </div>
+            <div>
+              <strong>{{ alerts.length }}</strong>
+              <small>alertas</small>
             </div>
           </div>
+        </article>
 
-          <div class="card card-rutas">
-            <div class="card-icon">🛣️</div>
-            <div class="card-body">
-              <h3 class="card-title">Rutas disponibles</h3>
-              <p class="card-number">{{ rutasCount() }}</p>
-              <p class="card-text">En Buenaventura</p>
-              <div class="sparkline"><canvas #rutasChart></canvas></div>
-            </div>
+        <article class="driver-panel map-panel">
+          <div class="panel-header">
+            <span class="eyebrow">Recorrido</span>
+            <span class="small-pill neutral">Live</span>
           </div>
-        </div>
+          <div class="mini-map-wrap">
+            <canvas #clientMiniMap></canvas>
+          </div>
+        </article>
+      </section>
 
-        <!-- quick actions moved to topbar; removed duplicate quick-links without links -->
-      }
-    </main>
+      <section class="driver-cards">
+        <article class="driver-card">
+          <span>Tiempo de servicio</span>
+          <strong>1h 42m</strong>
+          <small>Sin retrasos</small>
+        </article>
+        <article class="driver-card">
+          <span>Paradas</span>
+          <strong>06</strong>
+          <small>5 confirmadas</small>
+        </article>
+        <article class="driver-card">
+          <span>Eficiencia</span>
+          <strong>{{ summaryStats[1].value }}</strong>
+          <small>Dentro del plan</small>
+        </article>
+        <article class="driver-card">
+          <span>Estado</span>
+          <strong>{{ alerts.length ? 'Revisar' : 'Normal' }}</strong>
+          <small>{{ alerts.length }} incidencias</small>
+        </article>
+      </section>
+
+      <section class="driver-grid">
+        <article class="panel route-panel">
+          <div class="panel-head">
+            <h3>Mis rutas</h3>
+            <button class="ghost-btn" type="button" routerLink="/mapa">Abrir mapa</button>
+          </div>
+
+          <div class="route-list">
+            @for (route of recentRoutes; track route.name) {
+              <div class="route-item">
+                <div class="route-main">
+                  <span class="route-badge"><i class="bi bi-map"></i></span>
+                  <div>
+                    <strong>{{ route.name }}</strong>
+                    <small>{{ route.time }}</small>
+                  </div>
+                </div>
+                <span class="status-badge" [class.ok]="route.status === 'En curso' || route.status === 'Completada'" [class.pending]="route.status === 'Programada' || route.status === 'En revisión'">
+                  {{ route.status }}
+                </span>
+              </div>
+            }
+          </div>
+        </article>
+
+        <aside class="panel side-panel">
+          <div class="panel-head">
+            <h3>Resumen del turno</h3>
+            <span class="mini-badge">{{ summaryStats[0].value }}</span>
+          </div>
+
+          <div class="summary-box">
+            <div class="summary-figure">{{ summaryStats[1].value }}</div>
+            <div class="summary-delta positive">+11.2%</div>
+          </div>
+
+          <div class="summary-grid">
+            @for (stat of summaryStats.slice(0, 3); track stat.label) {
+              <div class="summary-stat">
+                <span class="summary-icon"><i [class]="stat.icon"></i></span>
+                <div>
+                  <strong>{{ stat.value }}</strong>
+                  <small>{{ stat.label }}</small>
+                </div>
+              </div>
+            }
+          </div>
+        </aside>
+      </section>
+    </div>
   </div>
-</div>
+} @else {
+  <div class="dashboard client-dashboard" [class.dark]="theme() === 'dark'">
+    <div class="client-shell">
+      <header class="client-topbar">
+        <div class="brand-block">
+          <div class="brand-mark">E</div>
+          <div class="brand-copy">
+            <span class="brand-kicker">EcoRutas</span>
+            <h1>{{ greeting() }}, {{ userName() }}!</h1>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <button class="chip" type="button">
+            <i class="bi bi-calendar3"></i>
+            <span>Hoy · operativa</span>
+          </button>
+          <button class="chip secondary" type="button" (click)="toggleTheme()">
+            <i class="bi bi-brightness-high"></i>
+            <span>Tema</span>
+          </button>
+          <button class="primary-btn" type="button" (click)="logout()">Cerrar sesión</button>
+        </div>
+      </header>
+
+      <div class="client-layout">
+        <div class="client-main">
+          <section class="hero-row">
+            <article class="hero-card hero-main">
+              <div class="card-label">Ruta en servicio</div>
+              <h2>{{ recentRoutes[0]?.name || 'Ruta principal' }}</h2>
+
+              <div class="hero-meta">
+                <span class="live-pill">
+                  <span class="live-dot"></span>
+                  En operación
+                </span>
+                <span class="hero-time">{{ recentRoutes[0]?.time || '08:30' }}</span>
+              </div>
+
+              <div class="hero-stats">
+                <div>
+                  <span class="mini-label">Vehículos</span>
+                  <strong>{{ vehiculosCount() }}</strong>
+                </div>
+                <div>
+                  <span class="mini-label">Cobertura</span>
+                  <strong>{{ summaryStats[0].value }}</strong>
+                </div>
+                <div>
+                  <span class="mini-label">Rutas hoy</span>
+                  <strong>{{ rutasCount() }}</strong>
+                </div>
+              </div>
+            </article>
+
+            <article class="hero-card preview-card">
+              <div class="card-label">Recorrido</div>
+              <div class="mini-map-wrap">
+                <canvas #clientMiniMap></canvas>
+              </div>
+            </article>
+          </section>
+
+          <section class="kpis">
+            <article class="kpi-card">
+              <div class="kpi-top">
+                <span>Vehículos</span>
+                <span class="trend positive">+12.5%</span>
+              </div>
+              <div class="kpi-value">{{ vehiculosCount() }}</div>
+              <div class="kpi-meta">Activos hoy</div>
+              <div class="sparkline"><canvas #clientVehChart></canvas></div>
+            </article>
+
+            <article class="kpi-card">
+              <div class="kpi-top">
+                <span>Rutas</span>
+                <span class="trend positive">+8.1%</span>
+              </div>
+              <div class="kpi-value">{{ rutasCount() }}</div>
+              <div class="kpi-meta">Disponibles</div>
+              <div class="sparkline"><canvas #clientRutasChart></canvas></div>
+            </article>
+
+            <article class="kpi-card">
+              <div class="kpi-top">
+                <span>Cobertura</span>
+                <span class="trend positive">+3%</span>
+              </div>
+              <div class="kpi-value">{{ summaryStats[0].value }}</div>
+              <div class="kpi-meta">Operación actual</div>
+            </article>
+
+            <article class="kpi-card alert-card">
+              <div class="kpi-top">
+                <span>Alertas</span>
+                <span class="trend warning">{{ alerts.length }}</span>
+              </div>
+              <div class="kpi-value">{{ alerts.length }}</div>
+              <div class="kpi-meta">Pendientes</div>
+            </article>
+          </section>
+
+          <section class="content-grid">
+            <article class="panel route-panel">
+              <div class="panel-head">
+                <h3>Rutas del día</h3>
+                <button class="ghost-btn" type="button" routerLink="/mapa">Ver mapa</button>
+              </div>
+
+              <div class="route-list">
+                @for (route of recentRoutes; track route.name) {
+                  <div class="route-item">
+                    <div class="route-main">
+                      <span class="route-badge"><i class="bi bi-signpost-split"></i></span>
+                      <div>
+                        <strong>{{ route.name }}</strong>
+                        <small>{{ route.time }}</small>
+                      </div>
+                    </div>
+
+                    <span class="status-badge" [class.ok]="route.status === 'En curso' || route.status === 'Completada'" [class.pending]="route.status === 'Programada' || route.status === 'En revisión'">
+                      {{ route.status }}
+                    </span>
+
+                    <span class="route-vehicles">{{ route.vehicles }} veh.</span>
+                  </div>
+                }
+              </div>
+            </article>
+          </section>
+        </div>
+
+        <aside class="client-rail panel side-panel">
+          <div class="panel-head">
+            <h3>Resumen</h3>
+            <span class="mini-badge">{{ summaryStats[0].value }}</span>
+          </div>
+
+          <div class="summary-box">
+            <div class="summary-figure">{{ summaryStats[0].value }}</div>
+            <div class="summary-delta positive">+24.4%</div>
+          </div>
+
+          <div class="summary-grid">
+            @for (stat of summaryStats; track stat.label) {
+              <div class="summary-stat">
+                <span class="summary-icon"><i [class]="stat.icon"></i></span>
+                <div>
+                  <strong>{{ stat.value }}</strong>
+                  <small>{{ stat.label }}</small>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="rail-card">
+            <span class="rail-label">Siguiente servicio</span>
+            <strong>Ruta 42</strong>
+            <small>Salida programada 08:30</small>
+          </div>
+
+          <div class="rail-card">
+            <span class="rail-label">Atención</span>
+            <strong>Todo estable</strong>
+            <small>Sin incidencias para hoy</small>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+}
+

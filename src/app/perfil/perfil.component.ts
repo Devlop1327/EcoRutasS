@@ -21,6 +21,9 @@ export class PerfilComponent implements OnInit {
   message = signal<{ type: 'success' | 'error'; text: string } | null>(null);
   userEmail = signal<string>('');
   avatar = signal<string | null>(null);
+  avatarModalOpen = signal(false);
+  successModalOpen = signal(false);
+  successModalText = signal('Perfil actualizado correctamente');
   theme = signal<'light' | 'dark'>((localStorage.getItem('theme') as 'light' | 'dark') || 'light');
 
   form = this.fb.group({
@@ -86,10 +89,13 @@ export class PerfilComponent implements OnInit {
       try { if (this.avatar()) localStorage.setItem('avatarDataUrl', this.avatar() as string); } catch { }
 
       this.message.set({ type: 'success', text: 'Perfil actualizado correctamente' });
-
-      setTimeout(() => this.message.set(null), 3000);
+      this.successModalText.set('Perfil actualizado correctamente');
+      this.successModalOpen.set(true);
+      setTimeout(() => this.message.set(null), 2000);
     } catch (e: any) {
       this.message.set({ type: 'error', text: e?.message || 'Error al guardar' });
+      this.successModalText.set('No se pudo guardar el perfil');
+      this.successModalOpen.set(true);
     } finally {
       this.saving.set(false);
     }
@@ -123,6 +129,18 @@ export class PerfilComponent implements OnInit {
     );
   }
 
+  openAvatarModal() {
+    this.avatarModalOpen.set(true);
+  }
+
+  closeAvatarModal() {
+    this.avatarModalOpen.set(false);
+  }
+
+  closeSuccessModal() {
+    this.successModalOpen.set(false);
+  }
+
   // Manejar selección de archivo de avatar
   onFileSelected(e: Event) {
     const input = e.target as HTMLInputElement;
@@ -139,7 +157,10 @@ export class PerfilComponent implements OnInit {
       this.avatar.set(dataUrl);
       try { localStorage.setItem('avatarDataUrl', dataUrl); } catch { }
       try { window.dispatchEvent(new CustomEvent('avatar-changed')); } catch { }
-      this.message.set({ type: 'success', text: 'Avatar actualizado Correctamente' });
+      this.message.set({ type: 'success', text: 'Avatar actualizado correctamente' });
+      this.successModalText.set('Avatar actualizado correctamente');
+      this.successModalOpen.set(true);
+      this.avatarModalOpen.set(false);
       setTimeout(() => this.message.set(null), 2000);
     };
     reader.readAsDataURL(file);

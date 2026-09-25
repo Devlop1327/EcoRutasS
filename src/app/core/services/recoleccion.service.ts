@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -13,6 +13,9 @@ type Ruta = {
 type Vehiculo = {
   id: string;
   placa?: string;
+  marca?: string;
+  modelo?: string;
+  activo?: boolean;
   rutaId?: string;
   lat?: number;
   lng?: number;
@@ -27,32 +30,65 @@ type Calle = {
 @Injectable({ providedIn: 'root' })
 export class RecoleccionService {
   private http = inject(HttpClient);
-  // En desarrollo (localhost) usamos proxy para evitar CORS; en otros hosts usamos URL absoluta
-  private base = ((
-    typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-  ) && environment.recoleccionApiProxy
-    ? environment.recoleccionApiProxy
-    : environment.recoleccionApiUrl) + '/api';
+  private readonly localRutas: Ruta[] = [
+    {
+      id: 'ruta-1',
+      nombre: 'Ruta centro',
+      zona: 'Centro',
+      coordenadas: [[-33.4489, -70.6693], [-33.4475, -70.668], [-33.446, -70.6664], [-33.4438, -70.6656]]
+    },
+    {
+      id: 'ruta-2',
+      nombre: 'Ruta sur',
+      zona: 'Sur',
+      coordenadas: [[-33.462, -70.6805], [-33.4589, -70.678], [-33.456, -70.6755], [-33.4522, -70.6738]]
+    }
+  ];
+
+  private readonly localCalles: Calle[] = [
+    { id: 'calle-1', nombre: 'Av. Providencia', coordenadas: [[-33.4489, -70.6693], [-33.4475, -70.668], [-33.446, -70.6664]] },
+    { id: 'calle-2', nombre: 'Calle Los Ángeles', coordenadas: [[-33.462, -70.6805], [-33.4589, -70.678], [-33.456, -70.6755]] },
+    { id: 'calle-3', nombre: 'Paseo Bulnes', coordenadas: [[-33.4438, -70.6656], [-33.442, -70.6635], [-33.4405, -70.6619]] }
+  ];
+
+  private readonly localVehiculos: Vehiculo[] = [];
+
+  private readonly base = this.resolveBase();
+
+  private resolveBase(): string {
+    const configured = (environment.recoleccionApiUrl || '').replace(/\/$/, '').trim();
+    return configured ? `${configured}/api` : '';
+  }
 
   async getRutas(): Promise<Ruta[]> {
-    const json = await firstValueFrom(this.http.get<any>(`${this.base}/rutas`, { withCredentials: false }));
-    const data = json?.data ?? json; // normaliza response.data
-    return (data || []).map((r: any) => ({
-      id: String(r.id ?? r.ext_id ?? r.codigo ?? ''),
-      nombre: String(r.nombre ?? r.name ?? r.titulo ?? 'Ruta'),
-      zona: r.zona ?? r.zone ?? undefined,
-      coordenadas: this.parseCoords(r.coordenadas ?? r.coordinates ?? r.path ?? r.geometry ?? r.shape),
-    }));
+    if (!this.base) return [...this.localRutas];
+    try {
+      const json = await firstValueFrom(this.http.get<any>(`${this.base}/rutas`, { withCredentials: false }));
+      const data = json?.data ?? json;
+      return (data || []).map((r: any) => ({
+        id: String(r.id ?? r.ext_id ?? r.codigo ?? ''),
+        nombre: String(r.nombre ?? r.name ?? r.titulo ?? 'Ruta'),
+        zona: r.zona ?? r.zone ?? undefined,
+        coordenadas: this.parseCoords(r.coordenadas ?? r.coordinates ?? r.path ?? r.geometry ?? r.shape),
+      }));
+    } catch {
+      return [...this.localRutas];
+    }
   }
 
   async getCalles(): Promise<Calle[]> {
-    const json = await firstValueFrom(this.http.get<any>(`${this.base}/calles`, { withCredentials: false }));
-    const data = json?.data ?? json;
-    return (data || []).map((c: any) => ({
-      id: String(c.id ?? c.ext_id ?? c.codigo ?? ''),
-      nombre: String(c.nombre_calle ?? c.nombre ?? c.name ?? 'Calle'),
-      coordenadas: this.parseCoords(c.coordenadas ?? c.coordinates ?? c.path ?? c.geometry ?? c.shape),
-    })).filter((c: Calle) => !!c.id && !!c.coordenadas && c.coordenadas.length > 1);
+    if (!this.base) return [...this.localCalles];
+    try {
+      const json = await firstValueFrom(this.http.get<any>(`${this.base}/calles`, { withCredentials: false }));
+      const data = json?.data ?? json;
+      return (data || []).map((c: any) => ({
+        id: String(c.id ?? c.ext_id ?? c.codigo ?? ''),
+        nombre: String(c.nombre_calle ?? c.nombre ?? c.name ?? 'Calle'),
+        coordenadas: this.parseCoords(c.coordenadas ?? c.coordinates ?? c.path ?? c.geometry ?? c.shape),
+      })).filter((c: Calle) => !!c.id && !!c.coordenadas && c.coordenadas.length > 1);
+    } catch {
+      return [...this.localCalles];
+    }
   }
 
   private parseCoords(raw: any): Array<[number, number]> | undefined {
@@ -95,13 +131,13 @@ export class RecoleccionService {
   }
 
   async getVehiculos(): Promise<Vehiculo[]> {
+    if (!this.base) return [];
+
     const perfil = environment.profileId;
     let allVehiculos: any[] = [];
     let currentPage = 1;
     let hasMorePages = true;
 
-
-    // Cargar TODAS las páginas
     while (hasMorePages) {
       try {
         const json = await firstValueFrom(this.http.get<any>(`${this.base}/vehiculos`, {
@@ -112,15 +148,12 @@ export class RecoleccionService {
           }
         }));
 
-
         const data = json?.data ?? [];
 
-        // Agregar vehículos de esta página
         if (Array.isArray(data) && data.length > 0) {
           allVehiculos = allVehiculos.concat(data);
         }
 
-        // Verificar si hay más páginas
         const lastPage = json?.last_page ?? 1;
         const nextPageUrl = json?.next_page_url;
 
@@ -129,13 +162,11 @@ export class RecoleccionService {
         } else {
           currentPage++;
         }
-
-      } catch (error) {
-        hasMorePages = false;
+      } catch {
+        return [...this.localVehiculos];
       }
     }
 
-    // Mapear todos los vehículos al formato esperado
     return allVehiculos.map((v: any) => ({
       id: String(v.id ?? v.ext_id ?? v.codigo ?? ''),
       placa: v.placa ?? v.plate ?? undefined,
@@ -148,37 +179,51 @@ export class RecoleccionService {
     }));
   }
 
-  // POST /api/vehiculos
   async crearVehiculo(payload: { placa: string; marca: string; modelo: string; activo: boolean }): Promise<any> {
+    if (!this.base) {
+      return { ok: true, data: { ...payload, id: `veh-${Date.now()}` } };
+    }
     const body = { ...payload, perfil_id: environment.profileId };
     return await firstValueFrom(this.http.post(`${this.base}/vehiculos`, body));
   }
 
-  // POST /api/rutas (caso A o B según docs)
   async crearRuta(payload: { nombre_ruta: string; shape?: any; calles_ids?: string[] }): Promise<any> {
+    if (!this.base) {
+      return { ok: true, data: { id: `ruta-${Date.now()}`, nombre_ruta: payload.nombre_ruta } };
+    }
     const body: any = { nombre_ruta: payload.nombre_ruta, perfil_id: environment.profileId };
     if (payload.shape) body.shape = payload.shape;
     if (payload.calles_ids) body.calles_ids = payload.calles_ids;
     return await firstValueFrom(this.http.post(`${this.base}/rutas`, body));
   }
 
-  // POST /api/recorridos/iniciar
   async iniciarRecorrido(payload: { ruta_id: string; vehiculo_id: string }): Promise<any> {
+    if (!this.base) {
+      return { ok: true, data: { id: `recorrido-${Date.now()}`, ...payload } };
+    }
     const body = { ...payload, perfil_id: environment.profileId };
     return await firstValueFrom(this.http.post(`${this.base}/recorridos/iniciar`, body));
   }
 
-  // POST /api/recorridos/{recorrido_id}/posiciones
   async registrarPosicion(recorrido_id: string, payload: { lat: number; lon: number }): Promise<any> {
+    if (!this.base) {
+      return { ok: true, data: { recorrido_id: recorrido_id, ...payload } };
+    }
     const body = { ...payload, perfil_id: environment.profileId };
     return await firstValueFrom(this.http.post(`${this.base}/recorridos/${recorrido_id}/posiciones`, body));
   }
 
   async getRutaById(id: string): Promise<any> {
+    if (!this.base) {
+      return this.localRutas.find((ruta) => ruta.id === id) ?? null;
+    }
     return await firstValueFrom(this.http.get(`${this.base}/rutas/${id}`, { withCredentials: false }));
   }
 
   async getVehiculoById(id: string): Promise<any> {
+    if (!this.base) {
+      return this.localVehiculos.find((vehiculo) => vehiculo.id === id) ?? null;
+    }
     const perfil = environment.profileId;
     return await firstValueFrom(this.http.get(`${this.base}/vehiculos/${id}`, {
       withCredentials: false,
@@ -187,10 +232,17 @@ export class RecoleccionService {
   }
 
   async updateVehiculo(id: string, payload: { placa?: string; marca?: string; modelo?: string; activo?: boolean }): Promise<any> {
+    if (!this.base) {
+      const current = this.localVehiculos.find((vehiculo) => vehiculo.id === id);
+      return { ok: true, data: { ...current, ...payload } };
+    }
     return await firstValueFrom(this.http.put(`${this.base}/vehiculos/${id}`, { ...payload, perfil_id: environment.profileId }));
   }
 
   async deleteVehiculo(id: string): Promise<any> {
+    if (!this.base) {
+      return { ok: true, data: { deletedId: id } };
+    }
     try {
       return await firstValueFrom(this.http.delete(`${this.base}/vehiculos/${id}`, {
         body: { perfil_id: environment.profileId },
@@ -203,16 +255,25 @@ export class RecoleccionService {
   }
 
   async listarPosiciones(recorrido_id: string): Promise<any[]> {
+    if (!this.base) {
+      return [{ recorrido_id: recorrido_id, lat: -33.4482, lng: -70.6684 }];
+    }
     const res = await firstValueFrom(this.http.get<any>(`${this.base}/recorridos/${recorrido_id}/posiciones`, { withCredentials: false }));
     return res?.data ?? res ?? [];
   }
 
   async misRecorridos(): Promise<any[]> {
+    if (!this.base) {
+      return [{ id: 'recorrido-1', nombre: 'Recorrido local', estado: 'activo' }];
+    }
     const res = await firstValueFrom(this.http.get<any>(`${this.base}/misrecorridos`, { withCredentials: false }));
     return res?.data ?? res ?? [];
   }
 
   async finalizarRecorrido(recorrido_id: string): Promise<any> {
+    if (!this.base) {
+      return { ok: true, data: { recorrido_id: recorrido_id, estado: 'finalizado' } };
+    }
     return await firstValueFrom(this.http.post(`${this.base}/recorridos/${recorrido_id}/finalizar`, { perfil_id: environment.profileId }));
   }
 }

@@ -229,36 +229,36 @@ export class EditorRutaComponent implements OnInit, OnDestroy {
     if (this.loading() || this.form.invalid || this.puntos().length < 2) return;
     this.loading.set(true);
     this.error.set(null);
+    this.success.set(null);
+
     try {
-      // GeoJSON exige [lng, lat]
+      const nombre = String(this.form.controls.nombre_ruta.value || 'Ruta').trim();
       const coordinates = this.puntos().map(p => [p[1], p[0]]);
-      const body = {
-        nombre_ruta: this.form.controls.nombre_ruta.value,
-        shape: { type: 'LineString', coordinates }
-      };
+      const geoJson = { type: 'LineString', coordinates };
       const id = this.route.snapshot.queryParamMap.get('id');
-      if (!id) {
-        // Nueva: crear en API y en Supabase (guardando ext_id)
-        const creado = await this.reco.crearRuta(body);
-        const extId = (creado as any)?.id ?? (creado as any)?.data?.id ?? (creado as any)?.ruta?.id ?? null;
-        await this.admin.createRuta({
-          nombre: String(this.form.controls.nombre_ruta.value || 'Ruta'),
-          geometria: { type: 'LineString', coordinates },
-          coordenadas: this.puntos(),
-          ext_id: extId ?? undefined
-        });
+      const payload = {
+        nombre,
+        descripcion: null,
+        geometria: geoJson,
+        coordenadas: this.puntos(),
+        estado: 'activo',
+        shape: null,
+        color_hex: '#059669',
+        longitud_m: this.calculateDistanceMeters(this.puntos()),
+        activo: true,
+      };
+
+      if (id) {
+        await this.admin.updateRuta(id, payload);
+        this.success.set('Ruta actualizada en Supabase');
       } else {
-        // Edición: actualizar en Supabase
-        await this.admin.updateRuta(id, {
-          nombre: String(this.form.controls.nombre_ruta.value || 'Ruta'),
-          geometria: { type: 'LineString', coordinates },
-          coordenadas: this.puntos()
-        });
+        await this.admin.createRuta(payload);
+        this.success.set('Ruta guardada en Supabase');
       }
-      this.success.set('Ruta guardada');
+
       setTimeout(() => this.router.navigateByUrl('/admin/rutas'), 800);
     } catch (e: any) {
-      this.error.set(e?.error?.message || 'No se pudo guardar la ruta');
+      this.error.set(e?.message || e?.error?.message || 'No se pudo guardar la ruta');
     } finally {
       this.loading.set(false);
     }
@@ -280,5 +280,28 @@ export class EditorRutaComponent implements OnInit, OnDestroy {
       return null;
     }
     return null;
+  }
+
+  private calculateDistanceMeters(points: Array<[number, number]>): number {
+    if (points.length < 2) return 0;
+
+    const toRad = (value: number) => (value * Math.PI) / 180;
+    const earthRadius = 6371000;
+    let total = 0;
+
+    for (let i = 1; i < points.length; i++) {
+      const prev = points[i - 1];
+      const curr = points[i];
+      const dLat = toRad(curr[0] - prev[0]);
+      const dLng = toRad(curr[1] - prev[1]);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(prev[0])) * Math.cos(toRad(curr[0])) *
+        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      total += earthRadius * c;
+    }
+
+    return Math.round(total);
   }
 }

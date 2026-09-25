@@ -10,9 +10,18 @@
         <input class="input" formControlName="nombre_ruta" placeholder="Ruta Buenaventura" />
       </label>
       <div class="actions">
-        <button class="btn btn-primary" type="submit" [disabled]="loading() || form.invalid || puntos().length < 2">Guardar ruta</button>
-        <button class="btn btn-ghost" type="button" (click)="undo()">Borrar último punto</button>
-        <button class="btn btn-ghost danger" type="button" (click)="clearAll()">Limpiar</button>
+        <button class="btn btn-primary" type="submit" [disabled]="loading() || form.invalid || puntos().length < 2">
+          <i class="bi bi-check-circle"></i>
+          <span>Guardar ruta</span>
+        </button>
+        <button class="btn btn-ghost" type="button" (click)="undo()">
+          <i class="bi bi-arrow-counterclockwise"></i>
+          <span>Borrar último punto</span>
+        </button>
+        <button class="btn btn-ghost danger" type="button" (click)="clearAll()">
+          <i class="bi bi-trash"></i>
+          <span>Limpiar</span>
+        </button>
       </div>
     </form>
     @if (error()) { <div class="alert error">{{ error() }}</div> }

@@ -247,7 +247,19 @@ export class AuthService {
       }
 
       if (!data) {
-        if (!this.role()) this.role.set('cliente');
+        // Si no existe el perfil, obtener rol de metadata de auth o usar defecto
+        const user = this.currentUser();
+        const metadataRole = user?.user_metadata?.['role'];
+        const defaultRole = (metadataRole && ['cliente', 'conductor', 'admin'].includes(metadataRole)) ? metadataRole : 'cliente';
+        
+        try {
+          await this.upsertProfileRole(userId, defaultRole);
+          this.role.set(defaultRole);
+          localStorage.setItem('user_role', defaultRole);
+        } catch (upsertError) {
+          console.error('[AuthService] Error creating profile:', upsertError);
+          if (!this.role()) this.role.set('cliente');
+        }
         return;
       }
 

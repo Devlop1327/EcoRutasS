@@ -82,9 +82,9 @@ export class ProfileLoaderComponent implements OnInit {
 
     // Esperar a que el perfil esté cargado
     const checkProfile = setInterval(() => {
-      const profile = this.auth.profile();
-      if (profile !== null) {
-        // Perfil cargado (puede ser un objeto o null si no existe)
+      const role = this.auth.role();
+      if (role !== null) {
+        // Rol cargado (puede ser 'cliente', 'conductor', 'admin')
         clearInterval(checkProfile);
         this.router.navigate(['/dashboard']).catch(err => {
           console.error('[ProfileLoader] Navigation error:', err);
@@ -92,10 +92,10 @@ export class ProfileLoaderComponent implements OnInit {
       }
     }, 500);
 
-    // Timeout de 10 segundos - si no carga el perfil, ir al dashboard de todas formas
+    // Timeout de 10 segundos - si no carga el rol, ir al dashboard de todas formas
     setTimeout(() => {
       clearInterval(checkProfile);
-      console.warn('[ProfileLoader] Profile load timeout, navigating to dashboard anyway');
+      console.warn('[ProfileLoader] Role load timeout, navigating to dashboard anyway');
       this.router.navigate(['/dashboard']).catch(err => {
         console.error('[ProfileLoader] Navigation error:', err);
       });

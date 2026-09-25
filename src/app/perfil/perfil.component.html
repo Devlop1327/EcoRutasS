@@ -1,146 +1,253 @@
 <div class="perfil" [class.dark]="theme() === 'dark'">
-  <header class="header">
-    <div class="header-content">
-      <h1 class="logo">EcoRutas</h1>
-      <div class="user-menu">
-        <a routerLink="/dashboard" class="btn-back">
-          <span class="icon">←</span>
-          <span class="text">Volver</span>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand-block">
+        <div class="brand-mark">E</div>
+        <div class="brand-copy">
+          <span class="brand-kicker">Operación</span>
+          <h1>EcoRutas</h1>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <a routerLink="/dashboard" class="btn btn-outline-light btn-sm ghost-button">
+          <span class="button-icon"><i class="bi bi-arrow-left"></i></span>
+          <span>Volver</span>
         </a>
-        <button class="btn-logout" (click)="logout()">
-          <span class="icon">⏻</span>
-          <span class="text">Cerrar Sesion</span>
+        <button class="btn btn-danger btn-sm danger-button" (click)="logout()">
+          <span class="button-icon"><i class="bi bi-box-arrow-right"></i></span>
+          <span>Cerrar sesión</span>
         </button>
       </div>
     </div>
   </header>
 
-  <main class="main">
-    <div class="page-header">
-      <h2 class="title">Mi Perfil</h2>
-      <p class="subtitle">Configura tu información personal</p>
-    </div>
-
-    <div class="avatar-section">
-      <div class="avatar-preview">
-        @if (avatar()) {
-          <img src="{{ avatar() }}" alt="Avatar" class="avatar-img" />
-        } @else {
-          <div class="avatar-placeholder">{{ userEmail().charAt(0).toUpperCase() }}</div>
-        }
+  <main class="page-shell">
+    <section class="hero-panel">
+      <div class="hero-copy">
+        <span class="eyebrow">Perfil</span>
+        <h2>Mi cuenta</h2>
+        <p>Configura tu información personal y tu zona operativa.</p>
       </div>
-      <div class="avatar-actions">
-        <label class="btn-upload">
-          Cambiar foto
-          <input type="file" accept="image/*" (change)="onFileSelected($event)" hidden />
-        </label>
+
+      <div class="quick-stats">
+        <article class="stat-chip">
+          <span class="stat-label">Rutas</span>
+          <strong>12</strong>
+        </article>
+        <article class="stat-chip">
+          <span class="stat-label">Cobertura</span>
+          <strong>96%</strong>
+        </article>
+        <article class="stat-chip">
+          <span class="stat-label">Puntualidad</span>
+          <strong>92%</strong>
+        </article>
       </div>
-    </div>
+    </section>
 
-    @if (message()) {
-      <div class="message" [class.success]="message()!.type === 'success'" [class.error]="message()!.type === 'error'">
-        {{ message()!.text }}
-      </div>
-    }
-
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-container">
-      <div class="section">
-        <h3 class="section-title">Información personal</h3>
-        <div class="form-grid">
-          <div class="form-field">
-            <label class="label">Correo electrónico</label>
-            <input type="text" class="input" [value]="userEmail()" disabled />
-            <small class="hint">No se puede modificar</small>
-          </div>
-
-          <div class="form-field">
-            <label class="label">Nombre de usuario *</label>
-            <input type="text" class="input" formControlName="username" />
-            @if (form.get('username')?.invalid && form.get('username')?.touched) {
-              <small class="error-text">Mínimo 3 caracteres</small>
+    <section class="content-grid">
+      <aside class="profile-side">
+        <div class="profile-card glow-card">
+          <div class="avatar-frame" (click)="openAvatarModal()">
+            @if (avatar()) {
+              <img [src]="avatar()" alt="Avatar del usuario" class="avatar-image" />
+            } @else {
+              <div class="avatar-fallback">{{ userEmail().charAt(0).toUpperCase() || 'U' }}</div>
             }
+            <span class="camera-badge"><i class="bi bi-camera-fill"></i></span>
           </div>
 
-          <div class="form-field">
-            <label class="label">Nombre completo</label>
-            <input type="text" class="input" formControlName="fullName" />
+          <div class="profile-meta">
+            <h3>{{ form.get('username')?.value || 'Usuario' }}</h3>
+            <p>{{ userEmail() || 'usuario@ecorutas.cl' }}</p>
           </div>
 
-          <div class="form-field">
-            <label class="label">Teléfono</label>
-            <input type="tel" class="input" formControlName="phone" placeholder="+57 300 123 4567" />
+          <div class="status-pill">
+            <span class="status-dot"></span>
+            Sistema activo
+          </div>
+
+          <div class="mini-actions">
+            <button type="button" class="mini-button" (click)="openAvatarModal()">Cambiar foto</button>
+            <button type="button" class="mini-button secondary" routerLink="/dashboard">Ver dashboard</button>
           </div>
         </div>
-      </div>
 
-      <div class="section">
-        <h3 class="section-title">Dirección de recolección</h3>
-        <div class="form-grid">
-          <div class="form-field full-width">
-            <label class="label">Dirección</label>
-            <input type="text" class="input" formControlName="address" placeholder="Calle 10 # 20-30" />
+        <div class="info-card">
+          <div class="card-header">
+            <span>Resumen</span>
+            <span class="badge-soft">Live</span>
+          </div>
+          <ul class="info-list">
+            <li>
+              <span>Zona</span>
+              <strong>Centro</strong>
+            </li>
+            <li>
+              <span>Último acceso</span>
+              <strong>Ahora</strong>
+            </li>
+            <li>
+              <span>Vehículos</span>
+              <strong>08 activos</strong>
+            </li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="editor-panel">
+        @if (message()) {
+          <div class="message" [class.success]="message()!.type === 'success'" [class.error]="message()!.type === 'error'">
+            {{ message()!.text }}
+          </div>
+        }
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-container">
+          <div class="section-header">
+            <div>
+              <span class="pill-label">Cuenta</span>
+              <h3>Información personal</h3>
+            </div>
           </div>
 
-          <div class="form-field">
-            <label class="label">Barrio</label>
-            <input type="text" class="input" formControlName="neighborhood" placeholder="Centro" />
+          <div class="form-grid">
+            <div class="form-field">
+              <label class="label">Correo electrónico</label>
+              <input type="text" class="input" [value]="userEmail()" disabled />
+              <small class="hint">No se puede modificar</small>
+            </div>
+
+            <div class="form-field">
+              <label class="label">Nombre de usuario *</label>
+              <input type="text" class="input" formControlName="username" />
+              @if (form.get('username')?.invalid && form.get('username')?.touched) {
+                <small class="error-text">Mínimo 3 caracteres</small>
+              }
+            </div>
+
+            <div class="form-field">
+              <label class="label">Nombre completo</label>
+              <input type="text" class="input" formControlName="fullName" />
+            </div>
+
+            <div class="form-field">
+              <label class="label">Teléfono</label>
+              <input type="tel" class="input" formControlName="phone" placeholder="+57 300 123 4567" />
+            </div>
           </div>
 
-          <div class="form-field">
-            <label class="label">Latitud</label>
-            <input type="number" class="input" formControlName="lat" step="0.000001" placeholder="3.882" />
+          <div class="section-header second">
+            <div>
+              <span class="pill-label">Ubicación</span>
+              <h3>Dirección de recolección</h3>
+            </div>
           </div>
 
-          <div class="form-field">
-            <label class="label">Longitud</label>
-            <input type="number" class="input" formControlName="lng" step="0.000001" placeholder="-77.031" />
+          <div class="form-grid">
+            <div class="form-field full-width">
+              <label class="label">Dirección</label>
+              <input type="text" class="input" formControlName="address" placeholder="Calle 10 # 20-30" />
+            </div>
+
+            <div class="form-field">
+              <label class="label">Barrio</label>
+              <input type="text" class="input" formControlName="neighborhood" placeholder="Centro" />
+            </div>
+
+            <div class="form-field">
+              <label class="label">Latitud</label>
+              <input type="number" class="input" formControlName="lat" step="0.000001" placeholder="3.882" />
+            </div>
+
+            <div class="form-field">
+              <label class="label">Longitud</label>
+              <input type="number" class="input" formControlName="lng" step="0.000001" placeholder="-77.031" />
+            </div>
+
+            <div class="form-field full-width">
+              <button type="button" class="btn-secondary" (click)="getCurrentLocation()" [disabled]="loading()">
+                @if (loading()) {
+                  Obteniendo ubicación...
+                } @else {
+                  Usar mi ubicación actual
+                }
+              </button>
+            </div>
           </div>
 
-          <div class="form-field full-width">
-            <button type="button" class="btn-secondary" (click)="getCurrentLocation()" [disabled]="loading()">
-              @if (loading()) {
-                Obteniendo ubicación...
+          <div class="section-header second">
+            <div>
+              <span class="pill-label">Preferencias</span>
+              <h3>Notificaciones</h3>
+            </div>
+          </div>
+
+          <div class="form-grid compact-grid">
+            <div class="form-field checkbox-field">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="notifyEmail" />
+                <span>Recibir notificaciones por correo</span>
+              </label>
+            </div>
+
+            <div class="form-field checkbox-field">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="notifyPush" />
+                <span>Recibir notificaciones push</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="button" routerLink="/dashboard" class="btn-cancel">Cancelar</button>
+            <button type="submit" class="btn-submit" [disabled]="form.invalid || saving()">
+              @if (saving()) {
+                Guardando...
               } @else {
-                Usar mi ubicación actual
+                Guardar cambios
               }
             </button>
           </div>
-        </div>
+        </form>
       </div>
-
-      <div class="section">
-        <h3 class="section-title">Rol de usuario</h3>
-      </div>
-
-      <div class="section">
-        <h3 class="section-title">Notificaciones</h3>
-        <div class="form-grid">
-          <div class="form-field checkbox-field">
-            <label class="checkbox-label">
-              <input type="checkbox" formControlName="notifyEmail" />
-              <span>Recibir notificaciones por correo</span>
-            </label>
-          </div>
-
-          <div class="form-field checkbox-field">
-            <label class="checkbox-label">
-              <input type="checkbox" formControlName="notifyPush" />
-              <span>Recibir notificaciones push</span>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button type="button" routerLink="/dashboard" class="btn-cancel">Cancelar</button>
-        <button type="submit" class="btn-submit" [disabled]="form.invalid || saving()">
-          @if (saving()) {
-            Guardando...
-          } @else {
-            Guardar cambios
-          }
-        </button>
-      </div>
-    </form>
+    </section>
   </main>
+
+  @if (avatarModalOpen()) {
+    <div class="modal-backdrop" (click)="closeAvatarModal()">
+      <div class="modal-panel" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h4>Cambiar foto</h4>
+          <button type="button" class="close-button" (click)="closeAvatarModal()">×</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="modal-avatar-preview">
+            @if (avatar()) {
+              <img [src]="avatar()" alt="Vista previa del avatar" />
+            } @else {
+              <div class="modal-avatar-fallback">{{ userEmail().charAt(0).toUpperCase() || 'U' }}</div>
+            }
+          </div>
+
+          <label class="upload-trigger">
+            Elegir imagen
+            <input type="file" accept="image/*" (change)="onFileSelected($event)" hidden />
+          </label>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (successModalOpen()) {
+    <div class="modal-backdrop success-backdrop" (click)="closeSuccessModal()">
+      <div class="success-modal" (click)="$event.stopPropagation()">
+        <div class="success-icon">✓</div>
+        <h4>¡Listo!</h4>
+        <p>{{ successModalText() }}</p>
+        <button type="button" class="success-button" (click)="closeSuccessModal()">Continuar</button>
+      </div>
+    </div>
+  }
 </div>
